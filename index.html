@@ -375,11 +375,25 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
     </div>
   </div>
   <div class="kg" id="dKpi"></div>
+  <!-- Gráficos principais -->
   <div class="g2">
-    <div class="card"><div class="ct">Dividendos mensais (€)</div><div class="cw2"><canvas id="cDivM"></canvas></div></div>
+    <div class="card"><div class="ct">Dividendos por ano (€)</div><div class="cw2"><canvas id="cDivY"></canvas></div></div>
     <div class="card"><div class="ct">Contribuição por ativo</div><div style="height:165px;position:relative"><canvas id="cDivA"></canvas></div><div class="cleg" id="dAL"></div></div>
   </div>
-  <div class="card"><div class="ct">Total recebido por ativo</div><div id="dByA"></div></div>
+  <!-- Gráfico mensal do ano seleccionado -->
+  <div class="card">
+    <div class="ct">Dividendos mensais — <span id="dYrLbl">2026</span>
+      <div class="pbar" id="pb-yr">
+        <button class="pb" onclick="selYr(2022,this)">2022</button>
+        <button class="pb" onclick="selYr(2023,this)">2023</button>
+        <button class="pb" onclick="selYr(2024,this)">2024</button>
+        <button class="pb" onclick="selYr(2025,this)">2025</button>
+        <button class="pb pb-on" onclick="selYr(2026,this)">2026</button>
+      </div>
+    </div>
+    <div class="cw2"><canvas id="cDivM"></canvas></div>
+  </div>
+  <div class="card"><div class="ct">Total recebido por ativo (histórico)</div><div id="dByA"></div></div>
   <div class="card"><div class="ct">Progresso para metas</div><div id="mProg"></div></div>
   <div class="card"><div class="ct">Histórico</div>
     <div class="tw"><table><thead><tr><th>Data</th><th>Ticker</th><th>€</th></tr></thead><tbody id="tbDH"></tbody></table></div>
@@ -903,6 +917,12 @@ async function refresh(){
   document.getElementById('lupd').textContent='A atualizar...';
   document.getElementById('ldot').style.display='none';
 
+  // Actualizar badge se há chave guardada
+  if(apiKey){
+    document.getElementById('fxBadge').textContent='A obter câmbios...';
+    document.getElementById('fxBadge').className='fxbadge';
+  }
+
   // Câmbios
   const fx=await fetchFX();
   if(fx){
@@ -1147,6 +1167,15 @@ function rAlerts(){
   }).join(''):`<div style="text-align:center;padding:20px;color:var(--txt3)">✅ Sem alertas para este filtro</div>`;
 }
 
+let selYear=2026;
+function selYr(yr,el){
+  selYear=yr;
+  document.getElementById('dYrLbl').textContent=yr;
+  document.querySelectorAll('#pb-yr .pb').forEach(b=>b.classList.remove('pb-on'));
+  el.classList.add('pb-on');
+  rDivs();
+}
+
 function gFD(){
   const now=new Date(),dp=S.div;
   const days={'1M':30,'3M':90,'YTD':null,'1A':365,'MAX':99999}[dp]||365;
@@ -1155,20 +1184,46 @@ function gFD(){
 
 function rDivs(){
   const divs=gFD(),aD=dH.map(d=>({data:d.d,ticker:d.t,v:d.v}));
-  const yr='2026',yD=aD.filter(d=>d.data.startsWith(yr));
+  const yr=String(selYear);
+  const yD=aD.filter(d=>d.data.startsWith(yr));
   const tA=aD.reduce((a,b)=>a+b.v,0),tY=yD.reduce((a,b)=>a+b.v,0);
-  const men=tY/Math.max(1,new Date().getMonth()+1);
+  // Média mensal do ano actual até ao mês corrente (ou 12 se for ano passado)
+  const curYear=new Date().getFullYear(),curMonth=new Date().getMonth()+1;
+  const monthsDone=selYear<curYear?12:(selYear===curYear?curMonth:1);
+  const men=tY/Math.max(1,monthsDone);
   const s=getSt(),aY=s.pos.filter(p=>p.yld>0).reduce((a,b)=>a+b.yld,0)/Math.max(1,s.pos.filter(p=>p.yld>0).length);
+  // KPIs — usar sempre 2026 para meta (ano corrente)
+  const tY2026=aD.filter(d=>d.data.startsWith('2026')).reduce((a,b)=>a+b.v,0);
+  const men2026=tY2026/Math.max(1,curMonth);
   document.getElementById('dKpi').innerHTML=`
     <div class="kc"><div class="kl">Total histórico</div><div class="kv">${fE(tA)}</div><div class="ks">${aD.length} pag.</div></div>
-    <div class="kc"><div class="kl">Este ano</div><div class="kv pos">${fE(tY)}</div><div class="ks">${yD.length} pag.</div></div>
-    <div class="kc"><div class="kl">Média mensal</div><div class="kv">${fE(men)}</div><div class="ks">Proj.: ${fE(men*12)}/ano</div></div>
+    <div class="kc"><div class="kl">Ano ${yr}</div><div class="kv pos">${fE(tY)}</div><div class="ks">${yD.length} pag.</div></div>
+    <div class="kc"><div class="kl">Média mensal ${yr}</div><div class="kv">${fE(men)}</div><div class="ks">Total: ${fE(tY)}</div></div>
     <div class="kc"><div class="kl">Yield médio</div><div class="kv">${aY.toFixed(2)}%</div><div class="ks">${s.pos.filter(p=>p.yld>0).length} pag.</div></div>
-    <div class="kc"><div class="kl">Meta €500/mês</div><div class="kv">${Math.min(100,(men/500*100)).toFixed(0)}%</div><div class="ks">${fE(men)} / €500</div></div>
-    <div class="kc"><div class="kl">Meta €1000/mês</div><div class="kv">${Math.min(100,(men/1000*100)).toFixed(0)}%</div><div class="ks">${fE(men)} / €1000</div></div>`;
+    <div class="kc"><div class="kl">Meta €500/mês</div><div class="kv">${Math.min(100,(men2026/500*100)).toFixed(0)}%</div><div class="ks">${fE(men2026)} / €500</div></div>
+    <div class="kc"><div class="kl">Meta €1000/mês</div><div class="kv">${Math.min(100,(men2026/1000*100)).toFixed(0)}%</div><div class="ks">${fE(men2026)} / €1000</div></div>`;
+
+  // GRÁFICO ANUAL — dividendos por ano desde 2022
+  dc('divY');
+  const anos=['2022','2023','2024','2025','2026'];
+  const totAnuais=anos.map(a=>+aD.filter(d=>d.data.startsWith(a)).reduce((s,d)=>s+d.v,0).toFixed(2));
+  charts.divY=new Chart(document.getElementById('cDivY').getContext('2d'),{
+    type:'bar',
+    data:{labels:anos,datasets:[{
+      data:totAnuais,
+      backgroundColor:anos.map(a=>a===yr?'#185FA5':'#0F6E56'),
+      borderRadius:5,
+      label:'Dividendos €'
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'€'+ctx.parsed.y.toFixed(2)}}},
+    scales:{y:{ticks:{callback:v=>'€'+v.toFixed(0),font:{size:10}},grid:{color:'rgba(128,128,128,.1)'}},
+    x:{grid:{display:false},ticks:{font:{size:11},color:anos.map(a=>a===yr?'var(--acc)':'var(--txt3)')}}}}
+  });
+
+  // GRÁFICO MENSAL — do ano seleccionado
   const bm=Array(12).fill(0);yD.forEach(d=>{bm[parseInt(d.data.split('-')[1])-1]+=d.v});
   dc('divM');
-  charts.divM=new Chart(document.getElementById('cDivM').getContext('2d'),{type:'bar',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],datasets:[{data:bm.map(v=>+v.toFixed(2)),backgroundColor:bm.map(v=>v>0?'#0F6E56':'rgba(128,128,128,.15)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'€'+v.toFixed(0),font:{size:10}},grid:{color:'rgba(128,128,128,.1)'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
+  charts.divM=new Chart(document.getElementById('cDivM').getContext('2d'),{type:'bar',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],datasets:[{data:bm.map(v=>+v.toFixed(2)),backgroundColor:bm.map((v,i)=>{const isCurrentMonth=selYear===curYear&&i===curMonth-1;return isCurrentMonth?'#BA7517':v>0?'#185FA5':'rgba(128,128,128,.1)';}),borderRadius:3,label:'€'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'€'+ctx.parsed.y.toFixed(2)}}},scales:{y:{ticks:{callback:v=>'€'+v.toFixed(0),font:{size:10}},grid:{color:'rgba(128,128,128,.1)'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
   const bT={};divs.forEach(d=>{if(!bT[d.ticker])bT[d.ticker]=0;bT[d.ticker]+=d.v});
   dc('divA');
   const tkE=Object.entries(bT).sort((a,b)=>b[1]-a[1]).slice(0,10);
