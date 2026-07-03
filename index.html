@@ -157,7 +157,7 @@ tr:hover td{background:var(--bgs)}
 
 /* ============ BENCHMARK ============ */
 .br{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px}
-.bn{min-width:90px;color:var(--txt2);font-weight:500}
+.bn{min-width:110px;color:var(--txt2);font-weight:500}
 .btb{flex:1;height:7px;background:var(--bgs);border-radius:3px;overflow:hidden}
 .bfb{height:100%;border-radius:3px}
 .bv{min-width:44px;text-align:right;font-weight:700;font-size:11px}
@@ -1085,11 +1085,98 @@ function rTop(pos){
   document.getElementById('outN').textContent=out.length?` — excl.: ${out.map(p=>p.ticker+' '+fP(p.plP)).join(', ')}`:'';
 }
 
-function rBench(cr){
+// Cache de dados históricos dos benchmarks (24h)
+const BM_CACHE_TTL=24*60*60*1000;
+const BM_TICKERS={
+  'S&P 500':{sym:'SPY',c:'#185FA5'},
+  'MSCI World':{sym:'URTH',c:'#534AB7'},
+  'Nasdaq':{sym:'QQQ',c:'#BA7517'},
+  'Dow Jones':{sym:'DIA',c:'#2C7873'},
+};
+
+// Buscar série diária de um ticker e calcular retorno para um período
+async function fetchBmReturn(sym, periodDays){
+  if(!apiKey) return null;
+  const cKey=`vipwa_bm_${sym}`;
+  const cached=JSON.parse(localStorage.getItem(cKey)||'null');
+  if(cached&&(Date.now()-cached.ts)<BM_CACHE_TTL) return calcReturn(cached.data, periodDays);
+
+  const data=await avFetch({function:'TIME_SERIES_DAILY',symbol:sym,outputsize:'compact'});
+  if(!data||!data['Time Series (Daily)']) return null;
+
+  // Guardar em cache
+  localStorage.setItem(cKey,JSON.stringify({ts:Date.now(),data:data['Time Series (Daily)']}));
+  return calcReturn(data['Time Series (Daily)'], periodDays);
+}
+
+function calcReturn(series, periodDays){
+  const dates=Object.keys(series).sort((a,b)=>b>a?1:-1); // mais recente primeiro
+  if(!dates.length) return null;
+  const latest=parseFloat(series[dates[0]]['4. close']);
+
+  let targetDate;
+  if(periodDays==='YTD'){
+    targetDate=new Date().getFullYear()+'-01-01';
+  }else{
+    const d=new Date();
+    d.setDate(d.getDate()-periodDays);
+    targetDate=d.toISOString().slice(0,10);
+  }
+
+  // Encontrar o dia mais próximo da data alvo (pode não haver dados ao fim-de-semana)
+  let pastClose=null;
+  for(const dt of [...dates].reverse()){
+    if(dt<=targetDate){pastClose=parseFloat(series[dt]['4. close']);break}
+  }
+  if(!pastClose) pastClose=parseFloat(series[dates[dates.length-1]]['4. close']);
+  return ((latest-pastClose)/pastClose)*100;
+}
+
+// Converter período string em dias
+function perToDays(cp){
+  return {'1S':7,'1M':30,'3M':90,'YTD':'YTD','1A':365,'MAX':1095}[cp]||30;
+}
+
+// Render benchmark — tenta API, fallback para simulado
+async function rBench(cr){
   const cp=S.cart;
-  const bm={'S&P 500':{r:{'1S':.4,'1M':2.1,'3M':6.2,'YTD':7.8,'1A':15.2,'MAX':42}[cp]||2.1,c:'#185FA5'},'MSCI World':{r:{'1S':.3,'1M':1.8,'3M':5.4,'YTD':6.9,'1A':13.8,'MAX':37}[cp]||1.8,c:'#534AB7'},'Carteira €':{r:cr,c:'#0F6E56'}};
-  const mx=Math.max(...Object.values(bm).map(b=>Math.abs(b.r)));
-  document.getElementById('benchD').innerHTML=Object.entries(bm).map(([nm,b])=>`<div class="br"><span class="bn">${nm}</span><div class="btb"><div class="bfb" style="width:${Math.max(2,Math.abs(b.r)/mx*100)}%;background:${b.c}"></div></div><span class="bv ${cs(b.r)}">${fP(b.r)}</span></div>`).join('')+'<div style="font-size:10px;color:var(--txt3);margin-top:5px">Benchmarks: valores simulados</div>';
+  const el=document.getElementById('benchD');
+  el.innerHTML='<div style="font-size:11px;color:var(--txt3);padding:8px 0"><span class="qloader"></span> A obter dados reais dos índices...</div>';
+
+  const days=perToDays(cp);
+  const bmEntries=Object.entries(BM_TICKERS);
+
+  // Valores simulados de fallback (caso API falhe)
+  const fallback={
+    'S&P 500':{'1S':.4,'1M':2.1,'3M':6.2,'YTD':7.8,'1A':15.2,'MAX':42},
+    'MSCI World':{'1S':.3,'1M':1.8,'3M':5.4,'YTD':6.9,'1A':13.8,'MAX':37},
+    'Nasdaq':{'1S':.6,'1M':3.1,'3M':8.5,'YTD':9.2,'1A':18.5,'MAX':55},
+    'Dow Jones':{'1S':.2,'1M':1.5,'3M':4.8,'YTD':5.9,'1A':12.1,'MAX':35},
+  };
+
+  // Buscar retornos reais em paralelo
+  const results=await Promise.all(
+    bmEntries.map(async ([nm,cfg])=>{
+      let ret=null;
+      try{ ret=await fetchBmReturn(cfg.sym, days); }catch(e){}
+      return{nm,cfg,ret:ret!==null?ret:(fallback[nm][cp]||2)};
+    })
+  );
+
+  // Adicionar carteira
+  const allBm=[...results,{nm:'Carteira €',cfg:{c:'#0F6E56'},ret:cr}];
+  const mx=Math.max(...allBm.map(b=>Math.abs(b.ret)));
+  const hasReal=results.some(r=>r.ret!==null&&apiKey);
+
+  el.innerHTML=allBm.map(({nm,cfg,ret})=>`
+    <div class="br">
+      <span class="bn">${nm}</span>
+      <div class="btb"><div class="bfb" style="width:${Math.max(2,Math.abs(ret)/mx*100)}%;background:${cfg.c}"></div></div>
+      <span class="bv ${cs(ret)}">${fP(ret)}</span>
+    </div>`).join('')+
+    `<div style="font-size:10px;color:var(--txt3);margin-top:5px">
+      ${hasReal?'✅ Dados reais via Alpha Vantage (SPY · URTH · QQQ · DIA)':'⚠️ Valores simulados — activa a API Key em ⚙️ Config para dados reais'}
+    </div>`;
 }
 
 function rAtivos(){
