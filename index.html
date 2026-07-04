@@ -282,6 +282,7 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
   <button class="nt" onclick="goP('calendario',this)">📅 Calendário</button>
   <button class="nt" onclick="goP('cambial',this)">💱 Cambial</button>
   <button class="nt" onclick="goP('fechadas',this)">🏁 Fechadas</button>
+  <button class="nt" onclick="goP('operacoes',this)">📁 Operações</button>
   <button class="nt" onclick="goP('config',this)">⚙️ Config</button>
 </nav>
 
@@ -450,6 +451,52 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
 </div>
 
 <!-- ===== CONFIG ===== -->
+<div class="panel" id="panel-operacoes">
+  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <input type="text" id="srOps" placeholder="🔍 Ticker..." style="max-width:130px;margin-bottom:0" oninput="rOpsTab()">
+      <select id="fOpsType" onchange="rOpsTab()" style="max-width:110px;margin-bottom:0">
+        <option value="">Todos tipos</option>
+        <option value="compra">Compra</option>
+        <option value="venda">Venda</option>
+        <option value="dividendo">Dividendo</option>
+      </select>
+      <select id="fOpsPlat" onchange="rOpsTab()" style="max-width:120px;margin-bottom:0">
+        <option value="">Todas plataformas</option>
+        <option value="XTB">XTB</option>
+        <option value="IBR">IBKR</option>
+        <option value="TR">Trade Republic</option>
+        <option value="Degiro">Degiro</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btnr" onclick="rOpsTab()" style="font-size:11px">↻ Actualizar</button>
+      <button class="btnr" onclick="expOps()" style="font-size:11px">⬇️ Exportar</button>
+    </div>
+  </div>
+  <!-- Resumo rápido -->
+  <div class="kg" id="opsKpi" style="margin-bottom:12px"></div>
+  <!-- Aviso registos sem tier -->
+  <div id="opsMissing"></div>
+  <!-- Tabela de operações editável -->
+  <div class="card" style="padding:0">
+    <div class="tw">
+      <table id="tblOps">
+        <thead><tr>
+          <th>Data</th><th>Tipo</th><th>Ticker</th><th>Nome</th>
+          <th>Qtd</th><th>Preço €</th><th>Plat.</th>
+          <th>Tier</th><th>Setor</th><th>Moeda</th><th>Notas</th><th>Acção</th>
+        </tr></thead>
+        <tbody id="tbOpsBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--txt3);margin-top:8px;padding:0 4px">
+    💡 Clica em qualquer campo laranja para editar. A Tier é obrigatória para o ativo aparecer na carteira.
+    Após editar, usa <strong>+ Promover para carteira</strong> para adicionar novos ativos.
+  </div>
+</div>
+
 <div class="panel" id="panel-config">
 
   <!-- API KEY -->
@@ -683,6 +730,7 @@ const PF=[
 {t:"XAIX",n:"Xtrackers AI & Big Data ETF",q:.1,pmc:149.78,m:"EUR",s:"ETF - Tecnologia",tier:4,dv:0,plat:"XTB",bd:"2025-09-22"},
 {t:"MICC",n:"Magnum (spin-off ULVR)",q:1.0,pmc:13.23,m:"EUR",s:"Consumo Defensivo",tier:3,dv:0,plat:"XTB",bd:"2025-12-10"},
 {t:"META",n:"Meta Platforms",q:.5,pmc:505.17,m:"USD",s:"Serviços de Comunicação",tier:2,dv:0,plat:"XTB",bd:"2026-03-31"},
+{t:"IQQX",n:"iShares Asia Pacific Dividend UCITS ETF",q:1.9663,pmc:26.275,m:"EUR",s:"ETF - Dividendos",tier:4,dv:1.18,plat:"TR",bd:"2026-06-23"},
 ];
 
 const FECH=[
@@ -1019,7 +1067,7 @@ function cAlerts(pos){
 // ============================================================
 // RENDER ALL
 // ============================================================
-function rAll(){rCart();rAtivos();rAlerts();rDivs();rCal();rFx();rFech();rOps();rTCfg()}
+function rAll(){rCart();rAtivos();rAlerts();rDivs();rCal();rFx();rFech();rOps();rTCfg();rOpsTab()}
 
 function rCart(){
   const s=getSt(),als=cAlerts(s.pos);
@@ -1515,8 +1563,15 @@ function importFile(file){
         if(!isNaN(num)&&num>40000){const d=new Date(Date.UTC(1899,11,30)+num*86400000);ds=d.toISOString().slice(0,10)}
         else ds=String(dataRaw).slice(0,10);
         if(!ds.match(/\d{4}-\d{2}-\d{2}/)){skip++;return}
-        if(tipo==='dividendo'&&divVal>0){dH.push({d:ds,t:ticker,v:divVal});ops.unshift({id:Date.now()+i,tipo:'dividendo',ticker,data:ds,qty:0,preco:divVal,comissao:0,moeda:'EUR',notas:'Importado'});ok++}
-        else if(tipo==='compra'){ops.unshift({id:Date.now()+i,tipo:'compra',ticker,data:ds,qty:qtd,preco:0,comissao:0,moeda:'USD',notas:'Importado'});ok++}
+        if(tipo==='dividendo'&&divVal>0){dH.push({d:ds,t:ticker,v:divVal});ops.unshift({id:Date.now()+i,tipo:'dividendo',ticker,nome:r['nome_ativo']||r['nome']||'',data:ds,qty:0,preco:divVal,comissao:0,moeda:'EUR',plataforma:r['plataforma']||'',plat:r['plataforma']||'',notas:'Importado'});ok++}
+        else if(tipo==='compra'){
+          const moedaI=r['moeda']||'EUR';
+          const cotacaoI=parseFloat(r['cotacao_compra']||r['cotacao\ncompra']||0);
+          const platI=(r['plataforma']||'').trim();
+          ops.unshift({id:Date.now()+i,tipo:'compra',ticker,
+            nome:r['nome_ativo']||r['nome\nativo']||r['nome']||'',
+            data:ds,qty:qtd,preco:cotacaoI,comissao:0,
+            moeda:moedaI,plataforma:platI,plat:platI,notas:'Importado'});ok++}
         else skip++;
       });
       dH.sort((a,b)=>a.d<b.d?-1:1);save();
@@ -1548,6 +1603,122 @@ function selEv(m,el){
   el.classList.add('pb-on');
   dc('ev');rEv(getSt());
 }
+// ============================================================
+// ABA OPERAÇÕES — tabela editável de todos os registos
+// ============================================================
+function rOpsTab(){
+  const sr=(document.getElementById('srOps')?.value||'').toUpperCase();
+  const fT=document.getElementById('fOpsType')?.value||'';
+  const fP=document.getElementById('fOpsPlat')?.value||'';
+
+  let filt=ops.filter(o=>
+    (!sr||o.ticker.toUpperCase().includes(sr)||((o.nome||'').toUpperCase().includes(sr)))&&
+    (!fT||o.tipo===fT)&&
+    (!fP||o.plat===fP||(o.plataforma||'').includes(fP))
+  ).sort((a,b)=>b.data>a.data?1:-1);
+
+  // KPIs
+  const nC=filt.filter(o=>o.tipo==='compra').length;
+  const nV=filt.filter(o=>o.tipo==='venda').length;
+  const nD=filt.filter(o=>o.tipo==='dividendo').length;
+  const tDiv=filt.filter(o=>o.tipo==='dividendo').reduce((a,b)=>a+(b.preco||0),0);
+  const semTier=ops.filter(o=>o.tipo==='compra'&&!o.tier).length;
+  document.getElementById('opsKpi').innerHTML=`
+    <div class="kc"><div class="kl">Total registos</div><div class="kv">${filt.length}</div><div class="ks">de ${ops.length}</div></div>
+    <div class="kc"><div class="kl">Compras</div><div class="kv">${nC}</div></div>
+    <div class="kc"><div class="kl">Vendas</div><div class="kv">${nV}</div></div>
+    <div class="kc"><div class="kl">Dividendos</div><div class="kv pos">${nD}</div><div class="ks">${fE(tDiv)}</div></div>
+    <div class="kc"><div class="kl">Sem Tier</div><div class="kv" style="color:${semTier>0?'var(--amb)':'var(--grn)'}">${semTier}</div><div class="ks">${semTier>0?'⚠️ a definir':'✅ OK'}</div></div>`;
+
+  // Aviso de registos sem tier
+  const semTierOps=ops.filter(o=>o.tipo==='compra'&&!o.tier);
+  document.getElementById('opsMissing').innerHTML=semTierOps.length?
+    `<div class="note note-amb" style="margin-bottom:10px">⚠️ ${semTierOps.length} compra(s) sem Tier definida: <strong>${[...new Set(semTierOps.map(o=>o.ticker))].join(', ')}</strong> — edita o campo Tier na tabela abaixo.</div>`:'';
+
+  // Tickers de compra únicos para sugerir promoção à carteira
+  const pfTickers=pf.map(p=>p.t);
+  const novosTickers=[...new Set(ops.filter(o=>o.tipo==='compra'&&!pfTickers.includes(o.ticker)).map(o=>o.ticker))];
+  const novosHtml=novosTickers.length?
+    `<div class="note note-acc" style="margin-bottom:10px">🆕 Tickers não presentes na carteira: <strong>${novosTickers.join(', ')}</strong> — usa o botão <em>+ Promover</em> na linha correspondente.</div>`:'';
+  document.getElementById('opsMissing').innerHTML+=novosHtml;
+
+  const mB={USD:'busd',EUR:'beur',GBP:'bgbp',MXN:'bmxn'};
+  const tc={compra:'bt1',venda:'bt5',dividendo:'bt2'};
+  const tierOpts=[1,2,3,4,5].map(t=>`<option value="${t}">${t}</option>`).join('');
+  const inPf=t=>pf.some(p=>p.t===t);
+
+  document.getElementById('tbOpsBody').innerHTML=filt.slice(0,200).map(o=>{
+    const semT=o.tipo==='compra'&&!o.tier;
+    const highlight=semT?'background:var(--amb-bg);':'';
+    const isNovo=o.tipo==='compra'&&!inPf(o.ticker);
+    return`<tr style="${highlight}">
+      <td style="font-size:10px;color:var(--txt3)">${o.data||'—'}</td>
+      <td><span class="badge ${tc[o.tipo]||'bt4'}">${o.tipo}</span></td>
+      <td><strong>${o.ticker}</strong></td>
+      <td style="font-size:10px;color:var(--txt2);max-width:140px;overflow:hidden;text-overflow:ellipsis">${o.nome||'—'}</td>
+      <td>${o.qty>0?o.qty.toFixed(4):'—'}</td>
+      <td>${o.preco>0?fE2(o.preco):'—'}</td>
+      <td style="font-size:10px">${o.plat||o.plataforma||'—'}</td>
+      <td>
+        <select onchange="editOp(${o.id},'tier',this.value)" style="width:55px;padding:2px 4px;font-size:11px;margin-bottom:0;border-color:${semT?'var(--amb)':'var(--bdr)'}">
+          <option value="">—</option>${tierOpts}
+        </select>
+      </td>
+      <td>
+        <input type="text" value="${o.setor||''}" onblur="editOp(${o.id},'setor',this.value)"
+          placeholder="setor..." style="width:110px;padding:2px 5px;font-size:11px;margin-bottom:0">
+      </td>
+      <td>
+        <select onchange="editOp(${o.id},'moeda',this.value)" style="width:65px;padding:2px 4px;font-size:11px;margin-bottom:0">
+          <option ${(o.moeda||'USD')==='USD'?'selected':''}>USD</option>
+          <option ${(o.moeda||'')==='EUR'?'selected':''}>EUR</option>
+          <option ${(o.moeda||'')==='GBP'?'selected':''}>GBP</option>
+          <option ${(o.moeda||'')==='MXN'?'selected':''}>MXN</option>
+        </select>
+      </td>
+      <td>
+        <input type="text" value="${o.notas||''}" onblur="editOp(${o.id},'notas',this.value)"
+          placeholder="notas..." style="width:90px;padding:2px 5px;font-size:11px;margin-bottom:0">
+      </td>
+      <td style="white-space:nowrap">
+        ${isNovo?`<button onclick="promoverOp(${o.id})" style="background:var(--acc);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-weight:700">+ Promover</button> `:''}
+        <button onclick="delOp(${o.id})" class="del" title="Apagar">✕</button>
+      </td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="12" style="text-align:center;padding:14px;color:var(--txt3)">Sem operações para este filtro</td></tr>`;
+}
+
+function editOp(id, field, value){
+  const op=ops.find(o=>o.id==id);
+  if(!op)return;
+  if(field==='tier')op.tier=value?parseInt(value):null;
+  else op[field]=value;
+  save();
+  // Se mudou tier, recalcular carteira
+  if(field==='tier') rAll();
+}
+
+function promoverOp(id){
+  const op=ops.find(o=>o.id==id);
+  if(!op)return;
+  if(!op.tier){alert('Define primeiro a Tier antes de promover.');return}
+  if(pf.some(p=>p.t===op.ticker)){alert(op.ticker+' já existe na carteira.');return}
+  // Calcular PMC médio de todas as compras deste ticker
+  const compras=ops.filter(o=>o.tipo==='compra'&&o.ticker===op.ticker);
+  const totalQty=compras.reduce((a,b)=>a+(b.qty||0),0);
+  const totalVal=compras.reduce((a,b)=>a+((b.qty||0)*(b.preco||0)),0);
+  const pmc=totalQty>0?totalVal/totalQty:op.preco||0;
+  const novaPos={
+    t:op.ticker,n:op.nome||op.ticker,q:totalQty,pmc:pmc,
+    m:op.moeda||'EUR',s:op.setor||'ETF',tier:op.tier,
+    dv:0,plat:op.plat||op.plataforma||'—',bd:op.data||'2026-01-01'
+  };
+  pf.push(novaPos);
+  save();
+  alert('✅ '+op.ticker+' adicionado à carteira com '+totalQty.toFixed(4)+' unidades e PMC €'+pmc.toFixed(3));
+  rAll();
+}
+
 function goP(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
