@@ -258,6 +258,22 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
   border-radius:var(--r);padding:6px 14px;font-weight:700;font-size:12px;cursor:pointer}
 .install-banner .close{background:none;color:rgba(255,255,255,.7);border:none;
   cursor:pointer;font-size:18px;padding:0 4px}
+.th-sort{cursor:pointer;user-select:none;white-space:nowrap}
+.th-sort:hover{color:var(--txt)}
+.th-sort .sort-icon{font-size:9px;margin-left:3px;opacity:.5}
+.th-sort.asc .sort-icon::after{content:'▲'}
+.th-sort.desc .sort-icon::after{content:'▼'}
+.th-sort:not(.asc):not(.desc) .sort-icon::after{content:'⇅'}
+.th-filter{width:100%;padding:2px 4px;font-size:10px;border:.5px solid var(--bdr);
+  border-radius:4px;background:var(--bgs);color:var(--txt);margin-top:3px;margin-bottom:0}
+.th-filter:focus{outline:none;border-color:var(--acc)}
+.pg-bar{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;
+  font-size:11px;color:var(--txt2)}
+.pg-bar button{padding:3px 10px;border:.5px solid var(--bdr);border-radius:var(--r);
+  background:transparent;cursor:pointer;font-size:11px;color:var(--txt2)}
+.pg-bar button:hover{background:var(--bgs)}
+.pg-bar button.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
+.pg-bar button:disabled{opacity:.3;cursor:default}
 </style>
 </head>
 <body data-theme="dark">
@@ -1346,7 +1362,7 @@ function rDivs(){
     type:'bar',
     data:{labels:anos,datasets:[{
       data:totAnuais,
-      backgroundColor:anos.map(a=>a===yr?'#185FA5':'#0F6E56'),
+      backgroundColor:anos.map(a=>a===yr?'#60AAEE':'#2E9E7A'),
       borderRadius:5,
       label:'Dividendos €'
     }]},
@@ -1365,9 +1381,10 @@ function rDivs(){
   charts.divA=new Chart(document.getElementById('cDivA').getContext('2d'),{type:'doughnut',data:{labels:tkE.map(x=>x[0]),datasets:[{data:tkE.map(x=>+x[1].toFixed(2)),backgroundColor:CLR,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
   const tvD=tkE.reduce((a,b)=>a+b[1],0);
   document.getElementById('dAL').innerHTML=tkE.map(([tk,v],i)=>`<div class="cli"><div class="cld" style="background:${CLR[i%CLR.length]}"></div><span>${tk} ${(v/tvD*100).toFixed(1)}%</span></div>`).join('');
-  const bTA={};aD.forEach(d=>{if(!bTA[d.ticker])bTA[d.ticker]=0;bTA[d.ticker]+=d.v});
+  const bTA={};
+  aD.forEach(d=>{const tkN=(d.ticker||'').replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'');if(!bTA[tkN])bTA[tkN]=0;bTA[tkN]+=d.v});
   const tkL=Object.entries(bTA).sort((a,b)=>b[1]-a[1]),tvA=tkL.reduce((a,b)=>a+b[1],0);
-  document.getElementById('dByA').innerHTML=tkL.slice(0,18).map(([tk,v])=>{
+  document.getElementById('dByA').innerHTML=tkL.map(([tk,v])=>{
     const p=pf.find(x=>x.t===tk),pct=v/tvA*100;
     return`<div class="sbar"><div class="sr"><span class="sn">${tk} <span style="font-size:10px;color:var(--txt3)">${p?p.n.substring(0,16):''}</span></span><div class="st"><div class="sf" style="width:${pct.toFixed(1)}%;background:#0F6E56"></div></div><span style="font-size:10px;font-weight:600;min-width:80px;text-align:right;color:var(--txt)">${fE(v)} <span style="color:var(--txt3)">(${pct.toFixed(1)}%)</span></span></div></div>`;
   }).join('');
@@ -1375,7 +1392,7 @@ function rDivs(){
     const pct=Math.min(100,(men/target*100));
     return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span style="color:var(--txt2);font-weight:500">€${target}/mês</span><span style="font-weight:700;color:var(--acc)">${pct.toFixed(0)}%</span></div><div style="height:8px;background:var(--bgs);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--acc);border-radius:4px"></div></div><div style="font-size:10px;color:var(--txt3);margin-top:2px">${fE(men)}/mês · €${target}/mês</div></div>`;
   }).join('')+`<div style="background:var(--bgs);border-radius:var(--r);padding:9px;font-size:11px;margin-top:6px">Para €1.000/mês (yield 4%): <strong>≈ €300.000</strong></div>`;
-  document.getElementById('tbDH').innerHTML=divs.slice().reverse().slice(0,40).map(d=>`<tr><td>${d.data}</td><td><strong>${d.ticker}</strong></td><td class="pos">${fE2(d.v)}</td></tr>`).join('');
+  document.getElementById('tbDH').innerHTML=divs.slice().reverse().slice(0,60).map(d=>`<tr><td>${d.data}</td><td><strong>${(d.ticker||'').replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$/,'')}</strong></td><td class="pos">${fE2(d.v)}</td></tr>`).join('');
 }
 
 function rCal(){
@@ -1516,8 +1533,9 @@ function saveTier(){const t=parseInt(document.getElementById('mTier').value);con
 function updOp(){const t=document.getElementById('opT').value;document.getElementById('wQ').style.display=t==='dividendo'?'none':'block';document.getElementById('wC').style.display=t==='dividendo'?'none':'block';document.getElementById('lPr').textContent=t==='dividendo'?'Valor total €':'Preço €'}
 function addOp(){
   const t=document.getElementById('opT').value,tk=document.getElementById('oTk').value.toUpperCase().trim(),dt=document.getElementById('oDt').value,q=parseFloat(document.getElementById('oQ').value)||0,pr=parseFloat(document.getElementById('oPr').value)||0,com=parseFloat(document.getElementById('oC').value)||0,moe=document.getElementById('oMo').value,nt=document.getElementById('oNt').value;
+  const tierManual=parseInt(document.getElementById('oTier')?.value)||null;
   if(!tk||!dt||!pr){alert('Preenche Ticker, Data e Preço.');return}
-  ops.unshift({id:Date.now(),tipo:t,ticker:tk,data:dt,qty:q,preco:pr,comissao:com,moeda:moe,notas:nt});
+  ops.unshift({id:Date.now(),tipo:t,ticker:tk,data:dt,qty:q,preco:pr,comissao:com,moeda:moe,tier:tierManual,notas:nt});
   if(t==='dividendo'){dH.push({d:dt,t:tk,v:pr});dH.sort((a,b)=>a.d<b.d?-1:1)}
   save();['oTk','oQ','oPr','oC','oNt'].forEach(id=>document.getElementById(id).value='');rOps();rDivs();
 }
@@ -1565,13 +1583,17 @@ function importFile(file){
         if(!ds.match(/\d{4}-\d{2}-\d{2}/)){skip++;return}
         if(tipo==='dividendo'&&divVal>0){dH.push({d:ds,t:ticker,v:divVal});ops.unshift({id:Date.now()+i,tipo:'dividendo',ticker,nome:r['nome_ativo']||r['nome']||'',data:ds,qty:0,preco:divVal,comissao:0,moeda:'EUR',plataforma:r['plataforma']||'',plat:r['plataforma']||'',notas:'Importado'});ok++}
         else if(tipo==='compra'){
+          const tkNorm=ticker.replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'');
+          const posExist=pf.find(p=>p.t===tkNorm);
+          const tierFromPf=posExist?posExist.tier:null;
           const moedaI=r['moeda']||'EUR';
           const cotacaoI=parseFloat(r['cotacao_compra']||r['cotacao\ncompra']||0);
           const platI=(r['plataforma']||'').trim();
-          ops.unshift({id:Date.now()+i,tipo:'compra',ticker,
+          const tickerFinal=ticker.replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'');
+          ops.unshift({id:Date.now()+i,tipo:'compra',ticker:tickerFinal,
             nome:r['nome_ativo']||r['nome\nativo']||r['nome']||'',
             data:ds,qty:qtd,preco:cotacaoI,comissao:0,
-            moeda:moedaI,plataforma:platI,plat:platI,notas:'Importado'});ok++}
+            moeda:moedaI,plataforma:platI,plat:platI,tier:tierFromPf,notas:'Importado'});ok++}
         else skip++;
       });
       dH.sort((a,b)=>a.d<b.d?-1:1);save();
@@ -1604,122 +1626,201 @@ function selEv(m,el){
   dc('ev');rEv(getSt());
 }
 // ============================================================
-// ABA OPERAÇÕES — tabela editável de todos os registos
+// SORT STATE + PAGINAÇÃO
+// ============================================================
+let atSort={col:'ticker',dir:'asc'};
+let opsSort={col:'data',dir:'desc'};
+let opsPgN=0;
+const OPS_PG=50;
+
+function normTicker(t){return (t||'').toUpperCase().replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'')}
+
+function sortAt(col){
+  if(atSort.col===col)atSort.dir=atSort.dir==='asc'?'desc':'asc';
+  else{atSort.col=col;atSort.dir='asc'}
+  document.querySelectorAll('#tblAt .th-sort').forEach(th=>th.classList.remove('asc','desc'));
+  const cols=['ticker','nome','tier','moeda','qP','chg','qty','pmcE','val','pl','plP','cagr','peso','','','estado','yld','plat'];
+  const ths=[...document.querySelectorAll('#tblAt .th-sort')];
+  const idx=cols.indexOf(col);if(idx>=0&&ths[idx])ths[idx].classList.add(atSort.dir);
+  rAtivos();
+}
+
+function sortOps(col){
+  if(opsSort.col===col)opsSort.dir=opsSort.dir==='asc'?'desc':'asc';
+  else{opsSort.col=col;opsSort.dir='asc'}
+  document.querySelectorAll('#tblOps .th-sort').forEach(th=>th.classList.remove('asc','desc'));
+  const cols=['data','tipo','ticker','nome','qty','preco','plat','tier'];
+  const ths=[...document.querySelectorAll('#tblOps .th-sort')];
+  const idx=cols.indexOf(col);if(idx>=0&&ths[idx])ths[idx].classList.add(opsSort.dir);
+  opsPgN=0;rOpsTab();
+}
+
+function limparFiltrosOps(){
+  ['srOps','fOpsType','fOpsPlat','fOpsDtI','fOpsDtF','fOpsTk','fOpsEst'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  opsPgN=0;rOpsTab();
+}
+
+function autoFillTier(){
+  const tk=(document.getElementById('oTk').value||'').toUpperCase().trim();
+  const pos=pf.find(p=>p.t===tk);
+  const lbl=document.getElementById('tierAutoLbl');
+  const sel=document.getElementById('oTier');
+  if(pos){sel.value=pos.tier;lbl.textContent='(auto)'}else{lbl.textContent=''}
+}
+
+// ============================================================
+// RENDER ATIVOS — sort + filtros por coluna
+// ============================================================
+function rAtivos(){
+  const s=getSt();
+  const fTicker=(document.getElementById('fAt_ticker')?.value||'').toUpperCase();
+  const fNome=(document.getElementById('fAt_nome')?.value||'').toUpperCase();
+  const fTier=document.getElementById('fAt_tier')?.value||'';
+  const fMoeda=document.getElementById('fAt_moeda')?.value||'';
+  const fEst=document.getElementById('fAt_est')?.value||'';
+  const fPlat=document.getElementById('fAt_plat')?.value||'';
+  const mB={USD:'busd',EUR:'beur',GBP:'bgbp',MXN:'bmxn'};
+  const isLive=tk=>!!Q[tk];
+  let pos=s.pos.map(p=>{
+    const sp=TS[p.tier]||{mn:0,mx:10};
+    let est='OK',et='tok';
+    if(p.peso>sp.mx){est='Sobre';et='tov'}else if(sp.mn>0&&p.peso<sp.mn){est='Sub';et='tun'}
+    return{...p,sp,est,et};
+  });
+  pos=pos.filter(p=>
+    (!fTicker||p.ticker.includes(fTicker))&&
+    (!fNome||p.nome.toUpperCase().includes(fNome))&&
+    (!fTier||String(p.tier)===fTier)&&
+    (!fMoeda||p.moeda===fMoeda)&&
+    (!fEst||p.est===fEst)&&
+    (!fPlat||(p.plat||'').toUpperCase().includes(fPlat.toUpperCase()))
+  );
+  const dir=atSort.dir==='asc'?1:-1,col=atSort.col;
+  pos.sort((a,b)=>{const av=a[col]??'',bv=b[col]??'';return typeof av==='number'?(av-bv)*dir:String(av).localeCompare(String(bv))*dir});
+  document.getElementById('tbAt').innerHTML=pos.map(p=>{
+    const priceCell=isLive(p.ticker)?fU(p.qP,p.moeda):`<span style="color:var(--txt3)">${fU(p.qP,p.moeda)}*</span>`;
+    return`<tr>
+      <td><strong>${p.ticker}</strong></td>
+      <td style="color:var(--txt2)">${p.nome.substring(0,20)}</td>
+      <td style="cursor:pointer" onclick="openTM('${p.ticker}',${p.tier})"><span class="badge bt${p.tier}">T${p.tier} ✎</span></td>
+      <td><span class="badge ${mB[p.moeda]||'busd'}">${p.moeda}</span></td>
+      <td>${priceCell}</td><td class="${cs(p.chg)}">${fP(p.chg)}</td>
+      <td>${p.qty.toFixed(2)}</td>
+      <td title="PMC ${p.moeda}: ${fU(p.pmc,p.m)}">${fE2(p.pmcE)}</td>
+      <td>${fE(p.val)}</td><td class="${cs(p.pl)}">${fE(p.pl)}</td>
+      <td class="${cs(p.plP)}">${fP(p.plP)}</td><td class="${cs(p.cagr)}">${fP(p.cagr)}/a</td>
+      <td>${p.peso.toFixed(1)}%</td>
+      <td style="color:var(--txt3)">${p.sp.mn}%</td><td style="color:var(--txt3)">${p.sp.mx}%</td>
+      <td><span class="tag ${p.et}">${p.est}</span></td>
+      <td>${p.yld>0?p.yld.toFixed(1)+'%':'—'}</td>
+      <td style="color:var(--txt3);font-size:10px">${p.plat}</td>
+    </tr>`;
+  }).join('')||`<tr><td colspan="18" style="text-align:center;padding:14px;color:var(--txt3)">Sem resultados</td></tr>`;
+}
+
+// ============================================================
+// ABA OPERAÇÕES — paginação, filtros avançados, sort
 // ============================================================
 function rOpsTab(){
+  const tkSel=document.getElementById('fOpsTk');
+  if(tkSel&&tkSel.options.length<=1){
+    const uniq=[...new Set(ops.map(o=>o.ticker).filter(Boolean))].sort();
+    uniq.forEach(t=>{const o=document.createElement('option');o.value=t;o.text=t;tkSel.add(o)});
+  }
   const sr=(document.getElementById('srOps')?.value||'').toUpperCase();
   const fT=document.getElementById('fOpsType')?.value||'';
-  const fP=document.getElementById('fOpsPlat')?.value||'';
+  const fP2=document.getElementById('fOpsPlat')?.value||'';
+  const fDtI=document.getElementById('fOpsDtI')?.value||'';
+  const fDtF=document.getElementById('fOpsDtF')?.value||'';
+  const fTk=document.getElementById('fOpsTk')?.value||'';
+  const fEst=document.getElementById('fOpsEst')?.value||'';
+  const normPf=pf.map(p=>normTicker(p.t));
 
-  let filt=ops.filter(o=>
-    (!sr||o.ticker.toUpperCase().includes(sr)||((o.nome||'').toUpperCase().includes(sr)))&&
-    (!fT||o.tipo===fT)&&
-    (!fP||o.plat===fP||(o.plataforma||'').includes(fP))
-  ).sort((a,b)=>b.data>a.data?1:-1);
+  let filt=ops.filter(o=>{
+    const tkN=normTicker(o.ticker||'');
+    const inPfN=normPf.includes(tkN);
+    if(fEst==='promover'&&(inPfN||o.tipo!=='compra'))return false;
+    if(fEst==='semtier'&&(o.tier||o.tipo!=='compra'))return false;
+    if(sr&&!(o.ticker||'').toUpperCase().includes(sr)&&!(o.nome||'').toUpperCase().includes(sr))return false;
+    if(fT&&o.tipo!==fT)return false;
+    if(fP2&&!(o.plat||o.plataforma||'').toUpperCase().includes(fP2.toUpperCase()))return false;
+    if(fDtI&&(o.data||'')<fDtI)return false;
+    if(fDtF&&(o.data||'')>fDtF)return false;
+    if(fTk&&o.ticker!==fTk)return false;
+    return true;
+  });
+
+  const dir=opsSort.dir==='asc'?1:-1,col=opsSort.col;
+  filt.sort((a,b)=>{const av=a[col]??'',bv=b[col]??'';return typeof av==='number'?(av-bv)*dir:String(av).localeCompare(String(bv))*dir});
 
   // KPIs
-  const nC=filt.filter(o=>o.tipo==='compra').length;
-  const nV=filt.filter(o=>o.tipo==='venda').length;
-  const nD=filt.filter(o=>o.tipo==='dividendo').length;
-  const tDiv=filt.filter(o=>o.tipo==='dividendo').reduce((a,b)=>a+(b.preco||0),0);
-  const semTier=ops.filter(o=>o.tipo==='compra'&&!o.tier).length;
+  const tDiv=ops.filter(o=>o.tipo==='dividendo').reduce((a,b)=>a+(b.preco||0),0);
+  const semTierCount=ops.filter(o=>o.tipo==='compra'&&!o.tier&&!normPf.includes(normTicker(o.ticker))).length;
   document.getElementById('opsKpi').innerHTML=`
-    <div class="kc"><div class="kl">Total registos</div><div class="kv">${filt.length}</div><div class="ks">de ${ops.length}</div></div>
-    <div class="kc"><div class="kl">Compras</div><div class="kv">${nC}</div></div>
-    <div class="kc"><div class="kl">Vendas</div><div class="kv">${nV}</div></div>
-    <div class="kc"><div class="kl">Dividendos</div><div class="kv pos">${nD}</div><div class="ks">${fE(tDiv)}</div></div>
-    <div class="kc"><div class="kl">Sem Tier</div><div class="kv" style="color:${semTier>0?'var(--amb)':'var(--grn)'}">${semTier}</div><div class="ks">${semTier>0?'⚠️ a definir':'✅ OK'}</div></div>`;
+    <div class="kc"><div class="kl">Total registos</div><div class="kv">${ops.length}</div><div class="ks">filtrados: ${filt.length}</div></div>
+    <div class="kc"><div class="kl">Compras</div><div class="kv">${ops.filter(o=>o.tipo==='compra').length}</div></div>
+    <div class="kc"><div class="kl">Vendas</div><div class="kv">${ops.filter(o=>o.tipo==='venda').length}</div></div>
+    <div class="kc"><div class="kl">Dividendos</div><div class="kv pos">${ops.filter(o=>o.tipo==='dividendo').length}</div><div class="ks">${fE(tDiv)}</div></div>
+    <div class="kc"><div class="kl">A promover</div><div class="kv" style="color:${semTierCount>0?'var(--amb)':'var(--grn)'}">${semTierCount}</div></div>`;
 
-  // Aviso de registos sem tier
-  const semTierOps=ops.filter(o=>o.tipo==='compra'&&!o.tier);
-  document.getElementById('opsMissing').innerHTML=semTierOps.length?
-    `<div class="note note-amb" style="margin-bottom:10px">⚠️ ${semTierOps.length} compra(s) sem Tier definida: <strong>${[...new Set(semTierOps.map(o=>o.ticker))].join(', ')}</strong> — edita o campo Tier na tabela abaixo.</div>`:'';
+  // Avisos
+  const semTierTks=[...new Set(ops.filter(o=>o.tipo==='compra'&&!o.tier&&!normPf.includes(normTicker(o.ticker))).map(o=>o.ticker))];
+  const novosTks=[...new Set(ops.filter(o=>o.tipo==='compra'&&!normPf.includes(normTicker(o.ticker))).map(o=>o.ticker))];
+  let avisos='';
+  if(semTierTks.length)avisos+=`<div class="note note-amb" style="margin-bottom:8px">⚠️ Sem Tier: <strong>${semTierTks.join(', ')}</strong></div>`;
+  if(novosTks.length)avisos+=`<div class="note note-acc" style="margin-bottom:8px">🆕 Não na carteira: <strong>${novosTks.join(', ')}</strong></div>`;
+  document.getElementById('opsMissing').innerHTML=avisos;
 
-  // Tickers de compra únicos para sugerir promoção à carteira
-  const pfTickers=pf.map(p=>p.t);
-  const novosTickers=[...new Set(ops.filter(o=>o.tipo==='compra'&&!pfTickers.includes(o.ticker)).map(o=>o.ticker))];
-  const novosHtml=novosTickers.length?
-    `<div class="note note-acc" style="margin-bottom:10px">🆕 Tickers não presentes na carteira: <strong>${novosTickers.join(', ')}</strong> — usa o botão <em>+ Promover</em> na linha correspondente.</div>`:'';
-  document.getElementById('opsMissing').innerHTML+=novosHtml;
+  // Paginação
+  const total=filt.length,pages=Math.ceil(total/OPS_PG)||1;
+  if(opsPgN>=pages)opsPgN=Math.max(0,pages-1);
+  const paged=filt.slice(opsPgN*OPS_PG,(opsPgN+1)*OPS_PG);
 
-  const mB={USD:'busd',EUR:'beur',GBP:'bgbp',MXN:'bmxn'};
-  const tc={compra:'bt1',venda:'bt5',dividendo:'bt2'};
-  const tierOpts=[1,2,3,4,5].map(t=>`<option value="${t}">${t}</option>`).join('');
-  const inPf=t=>pf.some(p=>p.t===t);
-
-  document.getElementById('tbOpsBody').innerHTML=filt.slice(0,200).map(o=>{
-    const semT=o.tipo==='compra'&&!o.tier;
-    const highlight=semT?'background:var(--amb-bg);':'';
-    const isNovo=o.tipo==='compra'&&!inPf(o.ticker);
-    return`<tr style="${highlight}">
-      <td style="font-size:10px;color:var(--txt3)">${o.data||'—'}</td>
-      <td><span class="badge ${tc[o.tipo]||'bt4'}">${o.tipo}</span></td>
+  // Tabela
+  document.getElementById('tbOpsBody').innerHTML=paged.map(o=>{
+    const tkN=normTicker(o.ticker||'');
+    const posExist=pf.find(p=>normTicker(p.t)===tkN);
+    const tierAuto=o.tier||(posExist?posExist.tier:null);
+    const semT=o.tipo==='compra'&&!tierAuto;
+    const isNovo=o.tipo==='compra'&&!normPf.includes(tkN);
+    return`<tr style="${semT?'background:var(--amb-bg);':''}">
+      <td style="font-size:10px;color:var(--txt3);white-space:nowrap">${o.data||'—'}</td>
+      <td><span class="badge ${o.tipo==='compra'?'bt1':o.tipo==='venda'?'bt5':'bt2'}">${o.tipo}</span></td>
       <td><strong>${o.ticker}</strong></td>
-      <td style="font-size:10px;color:var(--txt2);max-width:140px;overflow:hidden;text-overflow:ellipsis">${o.nome||'—'}</td>
-      <td>${o.qty>0?o.qty.toFixed(4):'—'}</td>
-      <td>${o.preco>0?fE2(o.preco):'—'}</td>
+      <td style="font-size:10px;color:var(--txt2);max-width:130px;overflow:hidden;text-overflow:ellipsis" title="${o.nome||''}">${(o.nome||'—').substring(0,22)}</td>
+      <td style="font-size:11px">${(o.qty||0)>0?(o.qty).toFixed(4):'—'}</td>
+      <td style="font-size:11px">${(o.preco||0)>0?fE2(o.preco):'—'}</td>
       <td style="font-size:10px">${o.plat||o.plataforma||'—'}</td>
-      <td>
-        <select onchange="editOp(${o.id},'tier',this.value)" style="width:55px;padding:2px 4px;font-size:11px;margin-bottom:0;border-color:${semT?'var(--amb)':'var(--bdr)'}">
-          <option value="">—</option>${tierOpts}
-        </select>
-      </td>
-      <td>
-        <input type="text" value="${o.setor||''}" onblur="editOp(${o.id},'setor',this.value)"
-          placeholder="setor..." style="width:110px;padding:2px 5px;font-size:11px;margin-bottom:0">
-      </td>
-      <td>
-        <select onchange="editOp(${o.id},'moeda',this.value)" style="width:65px;padding:2px 4px;font-size:11px;margin-bottom:0">
-          <option ${(o.moeda||'USD')==='USD'?'selected':''}>USD</option>
-          <option ${(o.moeda||'')==='EUR'?'selected':''}>EUR</option>
-          <option ${(o.moeda||'')==='GBP'?'selected':''}>GBP</option>
-          <option ${(o.moeda||'')==='MXN'?'selected':''}>MXN</option>
-        </select>
-      </td>
-      <td>
-        <input type="text" value="${o.notas||''}" onblur="editOp(${o.id},'notas',this.value)"
-          placeholder="notas..." style="width:90px;padding:2px 5px;font-size:11px;margin-bottom:0">
-      </td>
+      <td><select onchange="editOp(${o.id},'tier',this.value)" style="width:50px;padding:2px 3px;font-size:11px;margin-bottom:0;border-color:${semT?'var(--amb)':'var(--bdr)'}">
+        <option value="">—</option>${[1,2,3,4,5].map(t=>`<option value="${t}" ${tierAuto==t?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><input type="text" value="${o.setor||posExist?.s||''}" onblur="editOp(${o.id},'setor',this.value)" style="width:90px;padding:2px 4px;font-size:11px;margin-bottom:0" placeholder="setor..."></td>
+      <td><select onchange="editOp(${o.id},'moeda',this.value)" style="width:58px;padding:2px 3px;font-size:11px;margin-bottom:0">
+        ${['USD','EUR','GBP','MXN'].map(m=>`<option ${(o.moeda||'EUR')===m?'selected':''}>${m}</option>`).join('')}
+      </select></td>
+      <td><input type="text" value="${o.notas||''}" onblur="editOp(${o.id},'notas',this.value)" style="width:75px;padding:2px 4px;font-size:11px;margin-bottom:0" placeholder="notas..."></td>
       <td style="white-space:nowrap">
-        ${isNovo?`<button onclick="promoverOp(${o.id})" style="background:var(--acc);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-weight:700">+ Promover</button> `:''}
-        <button onclick="delOp(${o.id})" class="del" title="Apagar">✕</button>
+        ${isNovo?`<button onclick="promoverOp(${o.id})" style="background:var(--acc);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer;font-weight:700;margin-right:2px">+</button>`:''}
+        <button onclick="if(confirm('Apagar?'))delOp(${o.id})" class="del">✕</button>
       </td>
     </tr>`;
-  }).join('')||`<tr><td colspan="12" style="text-align:center;padding:14px;color:var(--txt3)">Sem operações para este filtro</td></tr>`;
+  }).join('')||`<tr><td colspan="12" style="text-align:center;padding:14px;color:var(--txt3)">Sem resultados</td></tr>`;
+
+  // Barra de paginação
+  const pgBar=document.getElementById('opsPg');
+  if(!pgBar)return;
+  if(pages<=1){pgBar.innerHTML='';return}
+  let h=`<span style="color:var(--txt3)">${opsPgN+1}/${pages} (${total} reg.)</span>`;
+  h+=`<button onclick="opsPgN=0;rOpsTab()" ${opsPgN===0?'disabled':''}>«</button>`;
+  h+=`<button onclick="opsPgN--;rOpsTab()" ${opsPgN===0?'disabled':''}>‹</button>`;
+  const ps=Math.max(0,opsPgN-2),pe=Math.min(pages-1,ps+4);
+  for(let i=ps;i<=pe;i++)h+=`<button onclick="opsPgN=${i};rOpsTab()" class="${i===opsPgN?'on':''}">${i+1}</button>`;
+  h+=`<button onclick="opsPgN++;rOpsTab()" ${opsPgN>=pages-1?'disabled':''}>›</button>`;
+  h+=`<button onclick="opsPgN=${pages-1};rOpsTab()" ${opsPgN>=pages-1?'disabled':''}>»</button>`;
+  pgBar.innerHTML=h;
 }
 
-function editOp(id, field, value){
-  const op=ops.find(o=>o.id==id);
-  if(!op)return;
-  if(field==='tier')op.tier=value?parseInt(value):null;
-  else op[field]=value;
-  save();
-  // Se mudou tier, recalcular carteira
-  if(field==='tier') rAll();
-}
-
-function promoverOp(id){
-  const op=ops.find(o=>o.id==id);
-  if(!op)return;
-  if(!op.tier){alert('Define primeiro a Tier antes de promover.');return}
-  if(pf.some(p=>p.t===op.ticker)){alert(op.ticker+' já existe na carteira.');return}
-  // Calcular PMC médio de todas as compras deste ticker
-  const compras=ops.filter(o=>o.tipo==='compra'&&o.ticker===op.ticker);
-  const totalQty=compras.reduce((a,b)=>a+(b.qty||0),0);
-  const totalVal=compras.reduce((a,b)=>a+((b.qty||0)*(b.preco||0)),0);
-  const pmc=totalQty>0?totalVal/totalQty:op.preco||0;
-  const novaPos={
-    t:op.ticker,n:op.nome||op.ticker,q:totalQty,pmc:pmc,
-    m:op.moeda||'EUR',s:op.setor||'ETF',tier:op.tier,
-    dv:0,plat:op.plat||op.plataforma||'—',bd:op.data||'2026-01-01'
-  };
-  pf.push(novaPos);
-  save();
-  alert('✅ '+op.ticker+' adicionado à carteira com '+totalQty.toFixed(4)+' unidades e PMC €'+pmc.toFixed(3));
-  rAll();
-}
-
-function goP(id,el){
+function goP(id,el){function goP(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
