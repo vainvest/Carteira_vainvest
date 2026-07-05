@@ -870,6 +870,10 @@ let ops=JSON.parse(localStorage.getItem('vipwa_ops'))||[];
 let Q={},charts={};
 let S={cart:'1M',div:'YTD',ev:'eur'};
 let alF='all',fTab='all',mTkr=null;
+let atSort={col:'ticker',dir:'asc'};
+let opsSort={col:'data',dir:'desc'};
+let opsPgN=0;
+const OPS_PG=50;
 let apiKey=localStorage.getItem('vipwa_apikey')||'';
 
 // Inicializar input da chave
@@ -1756,10 +1760,6 @@ function promoverOp(id){
   rAll();
 }
 
-let atSort={col:'ticker',dir:'asc'};
-let opsSort={col:'data',dir:'desc'};
-let opsPgN=0;
-const OPS_PG=50;
 function normTicker(t){return(t||'').toUpperCase().replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'')}
 function sortAt(col){if(atSort.col===col)atSort.dir=atSort.dir==='asc'?'desc':'asc';else{atSort.col=col;atSort.dir='asc'}document.querySelectorAll('#tblAt .th-sort').forEach(th=>th.classList.remove('asc','desc'));const cols=['ticker','nome','tier','moeda','qP','chg','qty','pmcE','val','pl','plP','cagr','peso','','','est','yld','plat'];const ths=[...document.querySelectorAll('#tblAt .th-sort')];const i=cols.indexOf(col);if(i>=0&&ths[i])ths[i].classList.add(atSort.dir);rAtivos();}
 function sortOps(col){if(opsSort.col===col)opsSort.dir=opsSort.dir==='asc'?'desc':'asc';else{opsSort.col=col;opsSort.dir='asc'}document.querySelectorAll('#tblOps .th-sort').forEach(th=>th.classList.remove('asc','desc'));const cols=['data','tipo','ticker','nome','qty','preco','plat','tier'];const ths=[...document.querySelectorAll('#tblOps .th-sort')];const i=cols.indexOf(col);if(i>=0&&ths[i])ths[i].classList.add(opsSort.dir);opsPgN=0;rOpsTab();}
