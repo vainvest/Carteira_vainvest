@@ -491,15 +491,18 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
     </div>
   </div>
   <div class="card" style="padding:0"><div class="tw"><table id="tOps"><thead><tr>
-    <th class="th-sort" onclick="sOps('data')">Data<span class="si desc"></span></th>
+    <th class="th-sort" onclick="sOps('data')">Data<span class="si desc"></span><br><input class="tf" id="fop_dt" placeholder="ex: 2026" oninput="rOpsTab()"></th>
     <th class="th-sort" onclick="sOps('tipo')">Tipo<span class="si"></span></th>
-    <th class="th-sort" onclick="sOps('ticker')">Ticker<span class="si"></span></th>
-    <th class="th-sort" onclick="sOps('nome')">Nome<span class="si"></span></th>
+    <th class="th-sort" onclick="sOps('ticker')">Ticker<span class="si"></span><br><input class="tf" id="fop_tc" placeholder="filtrar..." oninput="rOpsTab()"></th>
+    <th class="th-sort" onclick="sOps('nome')">Nome<span class="si"></span><br><input class="tf" id="fop_nm" placeholder="filtrar..." oninput="rOpsTab()"></th>
     <th class="th-sort" onclick="sOps('qty')">Qtd<span class="si"></span></th>
     <th class="th-sort" onclick="sOps('preco')">Preço €<span class="si"></span></th>
-    <th class="th-sort" onclick="sOps('plat')">Plat.<span class="si"></span></th>
-    <th class="th-sort" onclick="sOps('tier')">Tier<span class="si"></span></th>
-    <th>Setor</th><th>Moeda</th><th>Notas</th><th>Acção</th>
+    <th class="th-sort" onclick="sOps('plat')">Plat.<span class="si"></span><br><input class="tf" id="fop_pl2" placeholder="filtrar..." oninput="rOpsTab()"></th>
+    <th class="th-sort" onclick="sOps('tier')">Tier<span class="si"></span><br><select class="tf" id="fop_tr2" onchange="rOpsTab()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></th>
+    <th>Setor<br><input class="tf" id="fop_st" placeholder="filtrar..." oninput="rOpsTab()"></th>
+    <th>Moeda<br><select class="tf" id="fop_mo" onchange="rOpsTab()"><option value="">—</option><option>USD</option><option>EUR</option><option>GBP</option><option>MXN</option></select></th>
+    <th>Notas<br><input class="tf" id="fop_nt" placeholder="filtrar..." oninput="rOpsTab()"></th>
+    <th>Acção</th>
   </tr></thead><tbody id="tbOpsBody"></tbody></table></div></div>
   <div class="pg" id="opsPg"></div>
   <div style="font-size:11px;color:var(--txt3);margin-top:6px">💡 Tier laranja = em falta. + promove ticker novo para a carteira.</div>
@@ -737,7 +740,6 @@ const PF=[
 {t:"XAIX",n:"Xtrackers AI & Big Data ETF",q:.1,pmc:149.78,m:"EUR",s:"ETF - Tecnologia",tier:4,dv:0,plat:"XTB",bd:"2025-09-22"},
 {t:"MICC",n:"Magnum (spin-off ULVR)",q:1.0,pmc:13.23,m:"EUR",s:"Consumo Defensivo",tier:3,dv:0,plat:"XTB",bd:"2025-12-10"},
 {t:"META",n:"Meta Platforms",q:.5,pmc:505.17,m:"USD",s:"Serviços de Comunicação",tier:2,dv:0,plat:"XTB",bd:"2026-03-31"},
-{t:"IQQX",n:"iShares Asia Pacific Dividend UCITS ETF",q:1.9663,pmc:26.275,m:"EUR",s:"ETF - Dividendos",tier:4,dv:1.18,plat:"TR",bd:"2026-06-23"},
 {t:"IQQX",n:"iShares Asia Pacific Dividend UCITS ETF",q:1.9663,pmc:26.275,m:"EUR",s:"ETF - Dividendos",tier:4,dv:1.18,plat:"TR",bd:"2026-06-23"},
 ];
 
@@ -1041,7 +1043,7 @@ function getSt(){
     tv+=val;tc+=cst;tdy+=dy;
     const yr=(new Date()-new Date(p.bd||'2023-01-01'))/(365.25*24*3600*1000);
     const cagr=yr>.1?(Math.pow(Math.max(.01,val/Math.max(.01,cst)),1/yr)-1)*100:plP;
-    return{...p,ticker:p.t,nome:p.n,qty:p.q,moeda:p.m,setor:p.s,plat:p.plat||'—',
+    return{...p,ticker:p.t,nome:p.n,qty:p.q,moeda:p.m,setor:(p.s==='Financeiro'?'Finanças':p.s),plat:p.plat||'—',
       qP:q.price,chg:q.change,prE,pmcE,val,cst,pl,plP,dy,yld,yoc,cagr,yr};
   });
   pos.forEach(p=>p.peso=(p.val/tv)*100);
@@ -1532,6 +1534,10 @@ function importFile(file){
         const dataRaw=r['data_operacao']||r['data']||'';
         const divVal=parseFloat(r['div']||0),qtd=parseFloat(r['un']||0);
         if(!ticker||!tipo||SKIP.some(s=>tipo.includes(s))){skip++;return}
+        // Normalizar setor
+        if(r['area_etf_/_reit']||r['area_etf__/_reit_'])r['setor_norm']=r['area_etf_/_reit']||r['area_etf__/_reit_'];
+        const setorRaw=(r['area_etf_/_reit']||r['setor']||'').trim();
+        const setorNorm=setorRaw==='Financeiro'?'Finanças':setorRaw;
         let ds='';const num=parseFloat(dataRaw);
         if(!isNaN(num)&&num>40000){const d=new Date(Date.UTC(1899,11,30)+num*86400000);ds=d.toISOString().slice(0,10)}
         else ds=String(dataRaw).slice(0,10);
@@ -1586,10 +1592,14 @@ function editOp(id, field, value){
   const op=ops.find(o=>o.id==id);
   if(!op)return;
   if(field==='tier')op.tier=value?parseInt(value):null;
-  else op[field]=value;
+  else{
+    // Normalizar setor
+    if(field==='setor'&&value==='Financeiro')value='Finanças';
+    op[field]=value;
+  }
   save();
-  // Se mudou tier, recalcular carteira
-  if(field==='tier') rAll();
+  // Recalcular e actualizar TODOS os gráficos sempre
+  rAll();
 }
 
 function promoverOp(id){
@@ -1645,7 +1655,7 @@ function sOps(col){
 }
 
 function limOps(){
-  ['fop_sr','fop_tp','fop_pl','fop_di','fop_df','fop_tk','fop_est'].forEach(function(id){
+  ['fop_sr','fop_tp','fop_pl','fop_di','fop_df','fop_tk','fop_est','fop_dt','fop_tc','fop_nm','fop_pl2','fop_tr2','fop_st','fop_mo','fop_nt'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
   opPg=0;rOpsTab();
@@ -1677,7 +1687,9 @@ function rAtivos(){
     var sp=TS[p.tier]||{mn:0,mx:10};
     var est='OK',et='tok';
     if(p.peso>sp.mx){est='Sobre';et='tov'}else if(sp.mn>0&&p.peso<sp.mn){est='Sub';et='tun'}
-    return Object.assign({},p,{sp:sp,est:est,et:et});
+    // Normalizar setor
+    var setor=p.setor==='Financeiro'?'Finanças':p.setor;
+    return Object.assign({},p,{setor:setor,sp:sp,est:est,et:et});
   });
   pos=pos.filter(function(p){
     return(!fTk||p.ticker.includes(fTk))&&
@@ -1733,6 +1745,15 @@ function rOpsTab(){
   var fDf=document.getElementById('fop_df')?.value||'';
   var fTk=document.getElementById('fop_tk')?.value||'';
   var fEst=document.getElementById('fop_est')?.value||'';
+  // Filtros das colunas da tabela
+  var fDt=(document.getElementById('fop_dt')?.value||'').toUpperCase();
+  var fTc=(document.getElementById('fop_tc')?.value||'').toUpperCase();
+  var fNm2=(document.getElementById('fop_nm')?.value||'').toUpperCase();
+  var fPl2=(document.getElementById('fop_pl2')?.value||'').toUpperCase();
+  var fTr2=document.getElementById('fop_tr2')?.value||'';
+  var fSt=(document.getElementById('fop_st')?.value||'').toUpperCase();
+  var fMo=document.getElementById('fop_mo')?.value||'';
+  var fNt=(document.getElementById('fop_nt')?.value||'').toUpperCase();
   var normPf=pf.map(function(p){return nTk(p.t)});
 
   var filt=ops.filter(function(o){
@@ -1746,6 +1767,15 @@ function rOpsTab(){
     if(fDi&&(o.data||'')<fDi)return false;
     if(fDf&&(o.data||'')>fDf)return false;
     if(fTk&&o.ticker!==fTk)return false;
+    // Filtros colunas tabela
+    if(fDt&&!(o.data||'').toUpperCase().includes(fDt))return false;
+    if(fTc&&!(o.ticker||'').toUpperCase().includes(fTc))return false;
+    if(fNm2&&!(o.nome||'').toUpperCase().includes(fNm2))return false;
+    if(fPl2&&!(o.plat||o.plataforma||'').toUpperCase().includes(fPl2))return false;
+    if(fTr2&&String(o.tier||'')!==fTr2)return false;
+    if(fSt&&!(o.setor||'').toUpperCase().includes(fSt))return false;
+    if(fMo&&(o.moeda||'')!==fMo)return false;
+    if(fNt&&!(o.notas||'').toUpperCase().includes(fNt))return false;
     return true;
   });
 
