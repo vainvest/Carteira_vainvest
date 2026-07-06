@@ -258,26 +258,30 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
   border-radius:var(--r);padding:6px 14px;font-weight:700;font-size:12px;cursor:pointer}
 .install-banner .close{background:none;color:rgba(255,255,255,.7);border:none;
   cursor:pointer;font-size:18px;padding:0 4px}
+
 .th-sort{cursor:pointer;user-select:none;white-space:nowrap}
 .th-sort:hover{color:var(--txt)}
-.th-sort .sort-icon{font-size:9px;margin-left:3px;opacity:.5}
-.th-sort.asc .sort-icon::after{content:'▲'}
-.th-sort.desc .sort-icon::after{content:'▼'}
-.th-sort:not(.asc):not(.desc) .sort-icon::after{content:'⇅'}
-.th-filter{width:100%;padding:2px 4px;font-size:10px;border:.5px solid var(--bdr);border-radius:4px;background:var(--bgs);color:var(--txt);margin-top:3px;margin-bottom:0}
-.th-filter:focus{outline:none;border-color:var(--acc)}
-.pg-bar{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;font-size:11px;color:var(--txt2)}
-.pg-bar button{padding:3px 10px;border:.5px solid var(--bdr);border-radius:var(--r);background:transparent;cursor:pointer;font-size:11px;color:var(--txt2)}
-.pg-bar button:hover{background:var(--bgs)}
-.pg-bar button.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
-.pg-bar button:disabled{opacity:.3;cursor:default}
+.th-sort .si{font-size:9px;margin-left:2px;opacity:.6}
+.th-sort.asc .si::after{content:'▲'}
+.th-sort.desc .si::after{content:'▼'}
+.th-sort:not(.asc):not(.desc) .si::after{content:'⇅'}
+.tf{width:100%;padding:2px 4px;font-size:10px;border:.5px solid var(--bdr);
+  border-radius:3px;background:var(--bgs);color:var(--txt);margin-top:2px;margin-bottom:0}
+.tf:focus{outline:none;border-color:var(--acc)}
+.pg{display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap;font-size:11px}
+.pg button{padding:2px 9px;border:.5px solid var(--bdr);border-radius:var(--r);
+  background:transparent;cursor:pointer;font-size:11px;color:var(--txt2)}
+.pg button:hover{background:var(--bgs)}
+.pg button.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
+.pg button:disabled{opacity:.3;cursor:default}
+.pg-info{font-size:10px;color:var(--txt3)}
 </style>
 </head>
 <body data-theme="dark">
 
 <!-- HEADER -->
 <div class="hdr">
-  <div class="logo"><em>Valor</em>Invest <small>PWA v1.6</small></div>
+  <div class="logo"><em>Valor</em>Invest <small>PWA v1.7</small></div>
   <div class="hright">
     <span class="fxbadge offline" id="fxBadge">A carregar...</span>
     <span class="lupd"><span class="ldot" id="ldot"></span><span id="lupd">—</span></span>
@@ -350,24 +354,24 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
 
 <!-- ===== ATIVOS ===== -->
 <div class="panel" id="panel-ativos">
-  <div class="card" style="padding:0"><div class="tw"><table id="tblAt"><thead><tr>
-    <th class="th-sort" onclick="sortAt('ticker')">Ticker<span class="sort-icon"></span><br><input class="th-filter" id="fAt_ticker" placeholder="filtrar..." oninput="rAtivos()"></th>
-    <th class="th-sort" onclick="sortAt('nome')">Nome<span class="sort-icon"></span><br><input class="th-filter" id="fAt_nome" placeholder="filtrar..." oninput="rAtivos()"></th>
-    <th class="th-sort" onclick="sortAt('tier')">Tier<span class="sort-icon"></span><br><select class="th-filter" id="fAt_tier" onchange="rAtivos()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></th>
-    <th class="th-sort" onclick="sortAt('moeda')">Moe.<span class="sort-icon"></span><br><select class="th-filter" id="fAt_moeda" onchange="rAtivos()"><option value="">—</option><option>USD</option><option>EUR</option><option>GBP</option><option>MXN</option></select></th>
-    <th class="th-sort" onclick="sortAt('qP')">Cotação<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('chg')">Var%<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('qty')">Qtd<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('pmcE')">PMC €<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('val')">Valor €<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('pl')">P&L €<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('plP')">P&L%<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('cagr')">CAGR/a<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('peso')">Peso%<span class="sort-icon"></span></th>
+  <div class="card" style="padding:0"><div class="tw"><table id="tAt"><thead><tr>
+    <th class="th-sort" onclick="sAt('ticker')">Ticker<span class="si"></span><br><input class="tf" id="fat_tk" placeholder="filtrar..." oninput="rAtivos()"></th>
+    <th class="th-sort" onclick="sAt('nome')">Nome<span class="si"></span><br><input class="tf" id="fat_nm" placeholder="filtrar..." oninput="rAtivos()"></th>
+    <th class="th-sort" onclick="sAt('tier')">Tier<span class="si"></span><br><select class="tf" id="fat_tr" onchange="rAtivos()"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></th>
+    <th class="th-sort" onclick="sAt('moeda')">Moe.<span class="si"></span><br><select class="tf" id="fat_mo" onchange="rAtivos()"><option value="">—</option><option>USD</option><option>EUR</option><option>GBP</option><option>MXN</option></select></th>
+    <th class="th-sort" onclick="sAt('qP')">Cotação<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('chg')">Var%<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('qty')">Qtd<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('pmcE')">PMC €<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('val')">Valor €<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('pl')">P&L €<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('plP')">P&L%<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('cagr')">CAGR/a<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('peso')">Peso%<span class="si"></span></th>
     <th>Min%</th><th>Max%</th>
-    <th class="th-sort" onclick="sortAt('est')">Estado<span class="sort-icon"></span><br><select class="th-filter" id="fAt_est" onchange="rAtivos()"><option value="">—</option><option value="OK">OK</option><option value="Sobre">Sobre</option><option value="Sub">Sub</option></select></th>
-    <th class="th-sort" onclick="sortAt('yld')">Yield%<span class="sort-icon"></span></th>
-    <th class="th-sort" onclick="sortAt('plat')">Plat.<span class="sort-icon"></span><br><select class="th-filter" id="fAt_plat" onchange="rAtivos()"><option value="">—</option><option>XTB</option><option>IBR</option><option>TR</option></select></th>
+    <th class="th-sort" onclick="sAt('est')">Estado<span class="si"></span><br><select class="tf" id="fat_est" onchange="rAtivos()"><option value="">—</option><option value="OK">OK</option><option value="Sobre">Sobre</option><option value="Sub">Sub</option></select></th>
+    <th class="th-sort" onclick="sAt('yld')">Yield%<span class="si"></span></th>
+    <th class="th-sort" onclick="sAt('plat')">Plat.<span class="si"></span><br><select class="tf" id="fat_pl" onchange="rAtivos()"><option value="">—</option><option>XTB</option><option>IBR</option><option>TR</option></select></th>
   </tr></thead><tbody id="tbAt"></tbody></table></div></div>
 </div>
 <div class="panel" id="panel-alertas">
@@ -471,55 +475,34 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
 
 <!-- ===== CONFIG ===== -->
 <div class="panel" id="panel-operacoes">
-  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <input type="text" id="srOps" placeholder="🔍 Ticker..." style="max-width:130px;margin-bottom:0" oninput="rOpsTab()">
-      <select id="fOpsType" onchange="rOpsTab()" style="max-width:110px;margin-bottom:0">
-        <option value="">Todos tipos</option>
-        <option value="compra">Compra</option>
-        <option value="venda">Venda</option>
-        <option value="dividendo">Dividendo</option>
-      </select>
-      <select id="fOpsPlat" onchange="rOpsTab()" style="max-width:120px;margin-bottom:0">
-        <option value="">Todas plataformas</option>
-        <option value="XTB">XTB</option>
-        <option value="IBR">IBKR</option>
-        <option value="TR">Trade Republic</option>
-        <option value="Degiro">Degiro</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:6px">
-      <button class="btnr" onclick="rOpsTab()" style="font-size:11px">↻ Actualizar</button>
-      <button class="btnr" onclick="expOps()" style="font-size:11px">⬇️ Exportar</button>
-    </div>
-  </div>
-  <!-- Resumo rápido -->
-  <div class="kg" id="opsKpi" style="margin-bottom:12px"></div>
-  <!-- Aviso registos sem tier -->
+  <div class="kg" id="opsKpi" style="margin-bottom:10px"></div>
   <div id="opsMissing"></div>
-  <!-- Tabela de operações editável -->
-  <div class="card" style="padding:0">
-    <div class="tw">
-      <table id="tblOps">
-        <thead><tr>
-          <th class="th-sort" onclick="sortOps('data')">Data<span class="sort-icon desc"></span></th>
-          <th class="th-sort" onclick="sortOps('tipo')">Tipo<span class="sort-icon"></span></th>
-          <th class="th-sort" onclick="sortOps('ticker')">Ticker<span class="sort-icon"></span></th>
-          <th class="th-sort" onclick="sortOps('nome')">Nome<span class="sort-icon"></span></th>
-          <th class="th-sort" onclick="sortOps('qty')">Qtd<span class="sort-icon"></span></th>
-          <th class="th-sort" onclick="sortOps('preco')">Preço €<span class="sort-icon"></span></th>
-          <th class="th-sort" onclick="sortOps('plat')">Plat.<span class="sort-icon"></span></th>
-          <th class="th-sort" onclick="sortOps('tier')">Tier<span class="sort-icon"></span></th>
-          <th>Setor</th><th>Moeda</th><th>Notas</th><th>Acção</th>
-        </tr></thead>
-        <tbody id="tbOpsBody"></tbody>
-      </table>
+  <!-- Filtros avançados -->
+  <div class="card" style="padding:10px 14px;margin-bottom:10px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;align-items:end">
+      <div><label>Ticker/Nome</label><input type="text" id="fop_sr" placeholder="filtrar..." style="margin-bottom:0" oninput="rOpsTab()"></div>
+      <div><label>Tipo</label><select id="fop_tp" onchange="rOpsTab()" style="margin-bottom:0"><option value="">Todos</option><option value="compra">Compra</option><option value="venda">Venda</option><option value="dividendo">Dividendo</option></select></div>
+      <div><label>Plataforma</label><select id="fop_pl" onchange="rOpsTab()" style="margin-bottom:0"><option value="">Todas</option><option value="XTB">XTB</option><option value="IBR">IBKR</option><option value="TR">Trade Republic</option></select></div>
+      <div><label>Data início</label><input type="date" id="fop_di" style="margin-bottom:0" onchange="rOpsTab()"></div>
+      <div><label>Data fim</label><input type="date" id="fop_df" style="margin-bottom:0" onchange="rOpsTab()"></div>
+      <div><label>Ticker específico</label><select id="fop_tk" onchange="rOpsTab()" style="margin-bottom:0"><option value="">Todos</option></select></div>
+      <div><label>Estado</label><select id="fop_est" onchange="rOpsTab()" style="margin-bottom:0"><option value="">Todos</option><option value="promover">Só a promover</option><option value="semtier">Sem Tier</option></select></div>
+      <div style="display:flex;gap:6px;align-items:flex-end"><button class="btns" onclick="limOps()" style="margin-top:0;flex:1">🗑 Limpar</button><button class="btnr" onclick="expOps()">⬇️</button></div>
     </div>
   </div>
-  <div class="pg-bar" id="opsPg"></div>
-  <div style="font-size:11px;color:var(--txt3);margin-top:6px;padding:0 4px">
-    💡 Tier laranja = em falta. <strong>+</strong> promove ticker novo para a carteira.
-  </div>
+  <div class="card" style="padding:0"><div class="tw"><table id="tOps"><thead><tr>
+    <th class="th-sort" onclick="sOps('data')">Data<span class="si desc"></span></th>
+    <th class="th-sort" onclick="sOps('tipo')">Tipo<span class="si"></span></th>
+    <th class="th-sort" onclick="sOps('ticker')">Ticker<span class="si"></span></th>
+    <th class="th-sort" onclick="sOps('nome')">Nome<span class="si"></span></th>
+    <th class="th-sort" onclick="sOps('qty')">Qtd<span class="si"></span></th>
+    <th class="th-sort" onclick="sOps('preco')">Preço €<span class="si"></span></th>
+    <th class="th-sort" onclick="sOps('plat')">Plat.<span class="si"></span></th>
+    <th class="th-sort" onclick="sOps('tier')">Tier<span class="si"></span></th>
+    <th>Setor</th><th>Moeda</th><th>Notas</th><th>Acção</th>
+  </tr></thead><tbody id="tbOpsBody"></tbody></table></div></div>
+  <div class="pg" id="opsPg"></div>
+  <div style="font-size:11px;color:var(--txt3);margin-top:6px">💡 Tier laranja = em falta. + promove ticker novo para a carteira.</div>
 </div>
 
 <div class="panel" id="panel-config">
@@ -568,7 +551,10 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
     <div class="ct">Registar operação manual
       <button class="btnr" style="font-size:11px" onclick="expOps()">⬇️ Exportar</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px"><div><label>Tipo</label><select id="opT" onchange="updOp()" style="margin-bottom:0"><option value="compra">Compra</option><option value="venda">Venda</option><option value="dividendo">Dividendo</option></select></div><div><label>Ticker</label><input type="text" id="oTk" placeholder="MSFT" style="text-transform:uppercase;margin-bottom:0" oninput="autoFillTier()"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+      <div><label>Tipo</label><select id="opT" onchange="updOp()" style="margin-bottom:0"><option value="compra">Compra</option><option value="venda">Venda</option><option value="dividendo">Dividendo</option></select></div>
+      <div><label>Ticker</label><input type="text" id="oTk" placeholder="MSFT" style="text-transform:uppercase;margin-bottom:0" oninput="autoFillTier()"></div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       <div><label>Data</label><input type="date" id="oDt"></div>
       <div><label>Tier <span id="tierAutoLbl" style="color:var(--acc);font-size:10px"></span></label><select id="oTier" style="margin-bottom:0"><option value="">—</option><option value="1">T1 CORE</option><option value="2">T2 QUALITY</option><option value="3">T3 TACTICAL</option><option value="4">T4 SPECULATIVE</option><option value="5">T5 HIGH RISK</option></select></div>
@@ -626,14 +612,8 @@ input:focus,select:focus{outline:none;border-color:var(--acc)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-// Chart.js defaults — texto visível em tema escuro
-window.addEventListener('load',()=>{
-  if(typeof Chart!=='undefined'){
-    Chart.defaults.color='rgba(200,200,200,.8)';
-    Chart.defaults.borderColor='rgba(128,128,128,.15)';
-  }
-});
-
+Chart.defaults.color='rgba(200,200,200,.8)';
+Chart.defaults.borderColor='rgba(128,128,128,.15)';
 // ============================================================
 // SERVICE WORKER
 // ============================================================
@@ -757,6 +737,7 @@ const PF=[
 {t:"XAIX",n:"Xtrackers AI & Big Data ETF",q:.1,pmc:149.78,m:"EUR",s:"ETF - Tecnologia",tier:4,dv:0,plat:"XTB",bd:"2025-09-22"},
 {t:"MICC",n:"Magnum (spin-off ULVR)",q:1.0,pmc:13.23,m:"EUR",s:"Consumo Defensivo",tier:3,dv:0,plat:"XTB",bd:"2025-12-10"},
 {t:"META",n:"Meta Platforms",q:.5,pmc:505.17,m:"USD",s:"Serviços de Comunicação",tier:2,dv:0,plat:"XTB",bd:"2026-03-31"},
+{t:"IQQX",n:"iShares Asia Pacific Dividend UCITS ETF",q:1.9663,pmc:26.275,m:"EUR",s:"ETF - Dividendos",tier:4,dv:1.18,plat:"TR",bd:"2026-06-23"},
 {t:"IQQX",n:"iShares Asia Pacific Dividend UCITS ETF",q:1.9663,pmc:26.275,m:"EUR",s:"ETF - Dividendos",tier:4,dv:1.18,plat:"TR",bd:"2026-06-23"},
 ];
 
@@ -884,10 +865,6 @@ let ops=JSON.parse(localStorage.getItem('vipwa_ops'))||[];
 let Q={},charts={};
 let S={cart:'1M',div:'YTD',ev:'eur'};
 let alF='all',fTab='all',mTkr=null;
-let atSort={col:'ticker',dir:'asc'};
-let opsSort={col:'data',dir:'desc'};
-let opsPgN=0;
-const OPS_PG=50;
 let apiKey=localStorage.getItem('vipwa_apikey')||'';
 
 // Inicializar input da chave
@@ -1258,54 +1235,6 @@ async function rBench(cr){
     </div>`;
 }
 
-function rAtivos(){
-  const s=getSt();
-  const fTk=(document.getElementById('fAt_ticker')?.value||'').toUpperCase();
-  const fNm=(document.getElementById('fAt_nome')?.value||'').toUpperCase();
-  const fTr=document.getElementById('fAt_tier')?.value||'';
-  const fMo=document.getElementById('fAt_moeda')?.value||'';
-  const fEst=document.getElementById('fAt_est')?.value||'';
-  const fPl=document.getElementById('fAt_plat')?.value||'';
-  const mB={USD:'busd',EUR:'beur',GBP:'bgbp',MXN:'bmxn'};
-  const isLive=tk=>!!Q[tk];
-  let pos=s.pos.map(p=>{
-    const sp=TS[p.tier]||{mn:0,mx:10};
-    let est='OK',et='tok';
-    if(p.peso>sp.mx){est='Sobre';et='tov'}else if(sp.mn>0&&p.peso<sp.mn){est='Sub';et='tun'}
-    return{...p,sp,est,et};
-  });
-  pos=pos.filter(p=>
-    (!fTk||p.ticker.includes(fTk))&&
-    (!fNm||p.nome.toUpperCase().includes(fNm))&&
-    (!fTr||String(p.tier)===fTr)&&
-    (!fMo||p.moeda===fMo)&&
-    (!fEst||p.est===fEst)&&
-    (!fPl||(p.plat||'').toUpperCase().includes(fPl.toUpperCase()))
-  );
-  const dir=atSort.dir==='asc'?1:-1,col=atSort.col;
-  pos.sort((a,b)=>{const av=a[col]??'',bv=b[col]??'';return typeof av==='number'?(av-bv)*dir:String(av).localeCompare(String(bv))*dir});
-  document.getElementById('tbAt').innerHTML=pos.map(p=>{
-    const priceCell=isLive(p.ticker)?fU(p.qP,p.moeda):`<span style="color:var(--txt3)">${fU(p.qP,p.moeda)}*</span>`;
-    return`<tr>
-      <td><strong>${p.ticker}</strong></td>
-      <td style="color:var(--txt2)">${p.nome.substring(0,20)}</td>
-      <td style="cursor:pointer" onclick="openTM('${p.ticker}',${p.tier})"><span class="badge bt${p.tier}">T${p.tier} ✎</span></td>
-      <td><span class="badge ${mB[p.moeda]||'busd'}">${p.moeda}</span></td>
-      <td>${priceCell}</td><td class="${cs(p.chg)}">${fP(p.chg)}</td>
-      <td>${p.qty.toFixed(2)}</td>
-      <td title="PMC ${p.moeda}: ${fU(pn(p.pmcE,p.moeda),p.moeda)}">${fE2(p.pmcE)}</td>
-      <td>${fE(p.val)}</td><td class="${cs(p.pl)}">${fE(p.pl)}</td>
-      <td class="${cs(p.plP)}">${fP(p.plP)}</td>
-      <td class="${cs(p.cagr)}">${fP(p.cagr)}/a</td>
-      <td>${p.peso.toFixed(1)}%</td>
-      <td style="color:var(--txt3)">${p.sp.mn}%</td><td style="color:var(--txt3)">${p.sp.mx}%</td>
-      <td><span class="tag ${p.et}">${p.est}</span></td>
-      <td>${p.yld>0?p.yld.toFixed(1)+'%':'—'}</td>
-      <td style="color:var(--txt3);font-size:10px">${p.plat}</td>
-    </tr>`;
-  }).join('')||`<tr><td colspan="18" style="text-align:center;padding:14px;color:var(--txt3)">Sem resultados</td></tr>`;
-}
-
 
 function setAlF(f,el){alF=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');rAlerts()}
 
@@ -1389,15 +1318,12 @@ function rDivs(){
     type:'bar',
     data:{labels:anos,datasets:[{
       data:totAnuais,
-      backgroundColor:anos.map(a=>a===yr?'#4A9EE8':'#3DB88A'),
-      borderColor:anos.map(a=>a===yr?'#4A9EE8':'#3DB88A'),
-      borderWidth:1,
+      backgroundColor:anos.map(a=>a===yr?'#4A9EE8':'#3DB88A'),borderColor:anos.map(a=>a===yr?'#4A9EE8':'#3DB88A'),borderWidth:1,
       borderRadius:5,
       label:'Dividendos €'
     }]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'€'+ctx.parsed.y.toFixed(2)}}},
-    scales:{y:{ticks:{callback:v=>'€'+v.toFixed(0),font:{size:10},color:'rgba(200,200,200,.7)'},grid:{color:'rgba(128,128,128,.15)'}},
-    x:{grid:{display:false},ticks:{font:{size:11,weight:'600'},color:anos.map(a=>a===yr?'#4A9EE8':'rgba(200,200,200,.7)')}}}}
+    scales:{y:{ticks:{callback:v=>'€'+v.toFixed(0),font:{size:10},color:'rgba(200,200,200,.8)'},grid:{color:'rgba(128,128,128,.15)'}},x:{grid:{display:false},ticks:{font:{size:11,weight:'600'},color:anos.map(a=>a===yr?'#4A9EE8':'rgba(200,200,200,.8)')}}}}
   });
 
   // GRÁFICO MENSAL — do ano seleccionado
@@ -1410,8 +1336,8 @@ function rDivs(){
   charts.divA=new Chart(document.getElementById('cDivA').getContext('2d'),{type:'doughnut',data:{labels:tkE.map(x=>x[0]),datasets:[{data:tkE.map(x=>+x[1].toFixed(2)),backgroundColor:CLR,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
   const tvD=tkE.reduce((a,b)=>a+b[1],0);
   document.getElementById('dAL').innerHTML=tkE.map(([tk,v],i)=>`<div class="cli"><div class="cld" style="background:${CLR[i%CLR.length]}"></div><span>${tk} ${(v/tvD*100).toFixed(1)}%</span></div>`).join('');
-  const bTA={};
-  aD.forEach(d=>{const tn=(d.ticker||'').replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'');if(!bTA[tn])bTA[tn]=0;bTA[tn]+=d.v});
+  var bTA={};
+  aD.forEach(function(d){var tn=(d.ticker||'').replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'');if(!bTA[tn])bTA[tn]=0;bTA[tn]+=d.v});
   const tkL=Object.entries(bTA).sort((a,b)=>b[1]-a[1]),tvA=tkL.reduce((a,b)=>a+b[1],0);
   document.getElementById('dByA').innerHTML=tkL.map(([tk,v])=>{
     const p=pf.find(x=>x.t===tk),pct=v/tvA*100;
@@ -1563,7 +1489,7 @@ function updOp(){const t=document.getElementById('opT').value;document.getElemen
 function addOp(){
   const t=document.getElementById('opT').value,tk=document.getElementById('oTk').value.toUpperCase().trim(),dt=document.getElementById('oDt').value,q=parseFloat(document.getElementById('oQ').value)||0,pr=parseFloat(document.getElementById('oPr').value)||0,com=parseFloat(document.getElementById('oC').value)||0,moe=document.getElementById('oMo').value,nt=document.getElementById('oNt').value;
   if(!tk||!dt||!pr){alert('Preenche Ticker, Data e Preço.');return}
-  const tierM=parseInt(document.getElementById('oTier')?.value)||null;
+  var tierM=parseInt(document.getElementById('oTier')?.value)||null;
   ops.unshift({id:Date.now(),tipo:t,ticker:tk,data:dt,qty:q,preco:pr,comissao:com,moeda:moe,tier:tierM,notas:nt});
   if(t==='dividendo'){dH.push({d:dt,t:tk,v:pr});dH.sort((a,b)=>a.d<b.d?-1:1)}
   save();['oTk','oQ','oPr','oC','oNt'].forEach(id=>document.getElementById(id).value='');rOps();rDivs();
@@ -1612,25 +1538,19 @@ function importFile(file){
         if(!ds.match(/\d{4}-\d{2}-\d{2}/)){skip++;return}
         if(tipo==='dividendo'&&divVal>0){dH.push({d:ds,t:ticker,v:divVal});ops.unshift({id:Date.now()+i,tipo:'dividendo',ticker,nome:r['nome_ativo']||r['nome']||'',data:ds,qty:0,preco:divVal,comissao:0,moeda:'EUR',plataforma:r['plataforma']||'',plat:r['plataforma']||'',notas:'Importado'});ok++}
         else if(tipo==='compra'){
+          var tkF=ticker.replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'');
+          var pEI=pf.find(function(p){return p.t===tkF});
           const moedaI=r['moeda']||'EUR';
           const cotacaoI=parseFloat(r['cotacao_compra']||r['cotacao\ncompra']||0);
           const platI=(r['plataforma']||'').trim();
-          const tkF=ticker.replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'');
-          const pEI=pf.find(p=>p.t===tkF);
           ops.unshift({id:Date.now()+i,tipo:'compra',ticker:tkF,
             nome:r['nome_ativo']||r['nome\nativo']||r['nome']||'',
             data:ds,qty:qtd,preco:cotacaoI,comissao:0,
             moeda:moedaI,plataforma:platI,plat:platI,tier:pEI?pEI.tier:null,notas:'Importado'});ok++}
         else skip++;
       });
-      // Deduplicar ops por id único (ticker+data+tipo+qty)
-const seen=new Set();
-ops=ops.filter(o=>{
-  const k=`${o.tipo}_${o.ticker}_${o.data}_${(o.qty||0).toFixed(4)}_${(o.preco||0).toFixed(2)}`;
-  if(seen.has(k))return false;
-  seen.add(k);return true;
-});
-dH=dH.filter((d,i,arr)=>arr.findIndex(x=>x.d===d.d&&x.t===d.t&&Math.abs(x.v-d.v)<0.01)===i);
+      var seen=new Set();ops=ops.filter(function(o){var k=o.tipo+'_'+o.ticker+'_'+o.data+'_'+(o.qty||0).toFixed(4)+'_'+(o.preco||0).toFixed(2);if(seen.has(k))return false;seen.add(k);return true;});
+dH=dH.filter(function(d,i,arr){return arr.findIndex(function(x){return x.d===d.d&&x.t===d.t&&Math.abs(x.v-d.v)<0.01})===i});
 dH.sort((a,b)=>a.d<b.d?-1:1);save();
       log.innerHTML+=`✅ ${ok} operações importadas\n⏭️ ${skip} linhas ignoradas\n--- Concluído!`;rAll();
     }catch(err){log.innerHTML+='❌ Erro: '+err.message}
@@ -1661,94 +1581,6 @@ function selEv(m,el){
   dc('ev');rEv(getSt());
 }
 // ============================================================
-// ABA OPERAÇÕES — tabela editável de todos os registos
-// ============================================================
-function rOpsTab(){
-  const sr=(document.getElementById('srOps')?.value||'').toUpperCase();
-  const fT=document.getElementById('fOpsType')?.value||'';
-  const fP=document.getElementById('fOpsPlat')?.value||'';
-
-  const fDtI=document.getElementById('fOpsDtI')?.value||'';
-  const fDtF=document.getElementById('fOpsDtF')?.value||'';
-  const fTkS=document.getElementById('fOpsTk')?.value||'';
-  const fEstO=document.getElementById('fOpsEst')?.value||'';
-  const normPf=pf.map(p=>normTicker(p.t));
-  let filt=ops.filter(o=>{const tkN=normTicker(o.ticker||'');const inPf=normPf.includes(tkN);if(fEstO==='promover'&&(inPf||o.tipo!=='compra'))return false;if(fEstO==='semtier'&&(o.tier||o.tipo!=='compra'))return false;if(sr&&!(o.ticker||'').toUpperCase().includes(sr)&&!(o.nome||'').toUpperCase().includes(sr))return false;if(fT&&o.tipo!==fT)return false;if(fP&&!(o.plat||o.plataforma||'').toUpperCase().includes(fP.toUpperCase()))return false;if(fDtI&&(o.data||'')<fDtI)return false;if(fDtF&&(o.data||'')>fDtF)return false;if(fTkS&&o.ticker!==fTkS)return false;return true;});
-  const dirO=opsSort.dir==='asc'?1:-1,colO=opsSort.col;
-  filt.sort((a,b)=>{const av=a[colO]??'',bv=b[colO]??'';return typeof av==='number'?(av-bv)*dirO:String(av).localeCompare(String(bv))*dirO});
-  const nC=filt.filter(o=>o.tipo==='compra').length;
-  const nV=filt.filter(o=>o.tipo==='venda').length;
-  const nD=filt.filter(o=>o.tipo==='dividendo').length;
-  const tDiv=filt.filter(o=>o.tipo==='dividendo').reduce((a,b)=>a+(b.preco||0),0);
-  const semTier=ops.filter(o=>o.tipo==='compra'&&!o.tier&&!normPf.includes(normTicker(o.ticker))).length;
-  document.getElementById('opsKpi').innerHTML=`
-    <div class="kc"><div class="kl">Total registos</div><div class="kv">${ops.length}</div><div class="ks">filtrados: ${filt.length}</div></div>
-    <div class="kc"><div class="kl">Compras</div><div class="kv">${nC}</div></div>
-    <div class="kc"><div class="kl">Vendas</div><div class="kv">${nV}</div></div>
-    <div class="kc"><div class="kl">Dividendos</div><div class="kv pos">${nD}</div><div class="ks">${fE(tDiv)}</div></div>
-    <div class="kc"><div class="kl">A promover</div><div class="kv" style="color:${semTier>0?'var(--amb)':'var(--grn)'}">${semTier}</div></div>`;
-
-  // Aviso de registos sem tier
-  const semTierOps=ops.filter(o=>o.tipo==='compra'&&!o.tier);
-  document.getElementById('opsMissing').innerHTML=semTierOps.length?
-    `<div class="note note-amb" style="margin-bottom:10px">⚠️ ${semTierOps.length} compra(s) sem Tier definida: <strong>${[...new Set(semTierOps.map(o=>o.ticker))].join(', ')}</strong> — edita o campo Tier na tabela abaixo.</div>`:'';
-
-  // Tickers de compra únicos para sugerir promoção à carteira
-  const pfTickers=pf.map(p=>p.t);
-  const novosTickers=[...new Set(ops.filter(o=>o.tipo==='compra'&&!pfTickers.includes(o.ticker)).map(o=>o.ticker))];
-  const novosHtml=novosTickers.length?
-    `<div class="note note-acc" style="margin-bottom:10px">🆕 Tickers não presentes na carteira: <strong>${novosTickers.join(', ')}</strong> — usa o botão <em>+ Promover</em> na linha correspondente.</div>`:'';
-  document.getElementById('opsMissing').innerHTML+=novosHtml;
-
-  const mB={USD:'busd',EUR:'beur',GBP:'bgbp',MXN:'bmxn'};
-  const tc={compra:'bt1',venda:'bt5',dividendo:'bt2'};
-  const tierOpts=[1,2,3,4,5].map(t=>`<option value="${t}">${t}</option>`).join('');
-  const inPf=t=>pf.some(p=>p.t===t);
-
-  const total=filt.length,pages=Math.ceil(total/OPS_PG)||1;
-  if(opsPgN>=pages)opsPgN=Math.max(0,pages-1);
-  const paged=filt.slice(opsPgN*OPS_PG,(opsPgN+1)*OPS_PG);
-  document.getElementById('tbOpsBody').innerHTML=paged.map(o=>{
-    const tkN2=normTicker(o.ticker||'');const posE2=pf.find(p=>normTicker(p.t)===tkN2);
-    const semT=o.tipo==='compra'&&!o.tier;
-    const highlight=semT?'background:var(--amb-bg);':'';
-    const isNovo=o.tipo==='compra'&&!inPf(o.ticker);
-    return`<tr style="${highlight}">
-      <td style="font-size:10px;color:var(--txt3)">${o.data||'—'}</td>
-      <td><span class="badge ${tc[o.tipo]||'bt4'}">${o.tipo}</span></td>
-      <td><strong>${o.ticker}</strong></td>
-      <td style="font-size:10px;color:var(--txt2);max-width:140px;overflow:hidden;text-overflow:ellipsis">${o.nome||'—'}</td>
-      <td>${o.qty>0?o.qty.toFixed(4):'—'}</td>
-      <td>${o.preco>0?fE2(o.preco):'—'}</td>
-      <td style="font-size:10px">${o.plat||o.plataforma||'—'}</td>
-      <td>
-        <select onchange="editOp(${o.id},'tier',this.value)" style="width:55px;padding:2px 4px;font-size:11px;margin-bottom:0;border-color:${semT?'var(--amb)':'var(--bdr)'}">
-          <option value="">—</option>${tierOpts}
-        </select>
-      </td>
-      <td>
-        <input type="text" value="${o.setor||''}" onblur="editOp(${o.id},'setor',this.value)"
-          placeholder="setor..." style="width:110px;padding:2px 5px;font-size:11px;margin-bottom:0">
-      </td>
-      <td>
-        <select onchange="editOp(${o.id},'moeda',this.value)" style="width:65px;padding:2px 4px;font-size:11px;margin-bottom:0">
-          <option ${(o.moeda||'USD')==='USD'?'selected':''}>USD</option>
-          <option ${(o.moeda||'')==='EUR'?'selected':''}>EUR</option>
-          <option ${(o.moeda||'')==='GBP'?'selected':''}>GBP</option>
-          <option ${(o.moeda||'')==='MXN'?'selected':''}>MXN</option>
-        </select>
-      </td>
-      <td>
-        <input type="text" value="${o.notas||''}" onblur="editOp(${o.id},'notas',this.value)"
-          placeholder="notas..." style="width:90px;padding:2px 5px;font-size:11px;margin-bottom:0">
-      </td>
-      <td style="white-space:nowrap">
-        ${isNovo?`<button onclick="promoverOp(${o.id})" style="background:var(--acc);color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-weight:700">+ Promover</button> `:''}
-        <button onclick="delOp(${o.id})" class="del" title="Apagar">✕</button>
-      </td>
-    </tr>`;
-  }).join('')||`<tr><td colspan="12" style="text-align:center;padding:14px;color:var(--txt3)">Sem operações para este filtro</td></tr>`;
-}
 
 function editOp(id, field, value){
   const op=ops.find(o=>o.id==id);
@@ -1781,11 +1613,217 @@ function promoverOp(id){
   rAll();
 }
 
-function normTicker(t){return(t||'').toUpperCase().replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'')}
-function sortAt(col){if(atSort.col===col)atSort.dir=atSort.dir==='asc'?'desc':'asc';else{atSort.col=col;atSort.dir='asc'}document.querySelectorAll('#tblAt .th-sort').forEach(th=>th.classList.remove('asc','desc'));const cols=['ticker','nome','tier','moeda','qP','chg','qty','pmcE','val','pl','plP','cagr','peso','','','est','yld','plat'];const ths=[...document.querySelectorAll('#tblAt .th-sort')];const i=cols.indexOf(col);if(i>=0&&ths[i])ths[i].classList.add(atSort.dir);rAtivos();}
-function sortOps(col){if(opsSort.col===col)opsSort.dir=opsSort.dir==='asc'?'desc':'asc';else{opsSort.col=col;opsSort.dir='asc'}document.querySelectorAll('#tblOps .th-sort').forEach(th=>th.classList.remove('asc','desc'));const cols=['data','tipo','ticker','nome','qty','preco','plat','tier'];const ths=[...document.querySelectorAll('#tblOps .th-sort')];const i=cols.indexOf(col);if(i>=0&&ths[i])ths[i].classList.add(opsSort.dir);opsPgN=0;rOpsTab();}
-function limparFiltrosOps(){['srOps','fOpsType','fOpsPlat','fOpsDtI','fOpsDtF','fOpsTk','fOpsEst'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});opsPgN=0;rOpsTab();}
-function autoFillTier(){const tk=(document.getElementById('oTk').value||'').toUpperCase().trim();const pos=pf.find(p=>p.t===tk);const lbl=document.getElementById('tierAutoLbl');const sel=document.getElementById('oTier');if(pos&&lbl&&sel){sel.value=pos.tier;lbl.textContent='(auto)'}else if(lbl)lbl.textContent='';}
+
+// ============================================================
+// ESTADO SORT + PAGINAÇÃO (declarados cedo para evitar hoisting issues)
+// ============================================================
+var atSrt={col:'ticker',dir:'asc'};
+var opSrt={col:'data',dir:'desc'};
+var opPg=0;
+var OP_SZ=50;
+
+function nTk(t){return(t||'').toUpperCase().replace(/\.NL$|\.L$|\.PA$|\.DE$|\.MI$|\.AS$|\.MC$/,'')}
+
+function sAt(col){
+  if(atSrt.col===col)atSrt.dir=atSrt.dir==='asc'?'desc':'asc';
+  else{atSrt.col=col;atSrt.dir='asc'}
+  document.querySelectorAll('#tAt .th-sort').forEach(t=>t.classList.remove('asc','desc'));
+  var cols=['ticker','nome','tier','moeda','qP','chg','qty','pmcE','val','pl','plP','cagr','peso','','','est','yld','plat'];
+  var ths=[...document.querySelectorAll('#tAt .th-sort')];
+  var i=cols.indexOf(col);if(i>=0&&ths[i])ths[i].classList.add(atSrt.dir);
+  rAtivos();
+}
+
+function sOps(col){
+  if(opSrt.col===col)opSrt.dir=opSrt.dir==='asc'?'desc':'asc';
+  else{opSrt.col=col;opSrt.dir='asc'}
+  document.querySelectorAll('#tOps .th-sort').forEach(t=>t.classList.remove('asc','desc'));
+  var cols=['data','tipo','ticker','nome','qty','preco','plat','tier'];
+  var ths=[...document.querySelectorAll('#tOps .th-sort')];
+  var i=cols.indexOf(col);if(i>=0&&ths[i])ths[i].classList.add(opSrt.dir);
+  opPg=0;rOpsTab();
+}
+
+function limOps(){
+  ['fop_sr','fop_tp','fop_pl','fop_di','fop_df','fop_tk','fop_est'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  opPg=0;rOpsTab();
+}
+
+function autoFillTier(){
+  var tk=(document.getElementById('oTk').value||'').toUpperCase().trim();
+  var pos=pf.find(function(p){return p.t===tk});
+  var lbl=document.getElementById('tierAutoLbl');
+  var sel=document.getElementById('oTier');
+  if(pos&&lbl&&sel){sel.value=pos.tier;lbl.textContent='(auto)'}
+  else if(lbl)lbl.textContent='';
+}
+
+// ============================================================
+// RENDER ATIVOS — com sort e filtros por coluna
+// ============================================================
+function rAtivos(){
+  var s=getSt();
+  var fTk=(document.getElementById('fat_tk')?.value||'').toUpperCase();
+  var fNm=(document.getElementById('fat_nm')?.value||'').toUpperCase();
+  var fTr=document.getElementById('fat_tr')?.value||'';
+  var fMo=document.getElementById('fat_mo')?.value||'';
+  var fEst=document.getElementById('fat_est')?.value||'';
+  var fPl=document.getElementById('fat_pl')?.value||'';
+  var mB={USD:'busd',EUR:'beur',GBP:'bgbp',MXN:'bmxn'};
+  var isLive=function(tk){return!!Q[tk]};
+  var pos=s.pos.map(function(p){
+    var sp=TS[p.tier]||{mn:0,mx:10};
+    var est='OK',et='tok';
+    if(p.peso>sp.mx){est='Sobre';et='tov'}else if(sp.mn>0&&p.peso<sp.mn){est='Sub';et='tun'}
+    return Object.assign({},p,{sp:sp,est:est,et:et});
+  });
+  pos=pos.filter(function(p){
+    return(!fTk||p.ticker.includes(fTk))&&
+      (!fNm||p.nome.toUpperCase().includes(fNm))&&
+      (!fTr||String(p.tier)===fTr)&&
+      (!fMo||p.moeda===fMo)&&
+      (!fEst||p.est===fEst)&&
+      (!fPl||(p.plat||'').toUpperCase().includes(fPl.toUpperCase()));
+  });
+  var dir=atSrt.dir==='asc'?1:-1,col=atSrt.col;
+  pos.sort(function(a,b){
+    var av=a[col]!=null?a[col]:'',bv=b[col]!=null?b[col]:'';
+    return typeof av==='number'?(av-bv)*dir:String(av).localeCompare(String(bv))*dir;
+  });
+  document.getElementById('tbAt').innerHTML=pos.map(function(p){
+    var pc=isLive(p.ticker)?fU(p.qP,p.moeda):'<span style="color:var(--txt3)">'+fU(p.qP,p.moeda)+'*</span>';
+    return'<tr>'+
+      '<td><strong>'+p.ticker+'</strong></td>'+
+      '<td style="color:var(--txt2)">'+p.nome.substring(0,20)+'</td>'+
+      '<td style="cursor:pointer" onclick="openTM(\"'+p.ticker+'\",'+p.tier+')"><span class="badge bt'+p.tier+'">T'+p.tier+' ✎</span></td>'+
+      '<td><span class="badge '+(mB[p.moeda]||'busd')+'">'+p.moeda+'</span></td>'+
+      '<td>'+pc+'</td>'+
+      '<td class="'+cs(p.chg)+'">'+fP(p.chg)+'</td>'+
+      '<td>'+p.qty.toFixed(2)+'</td>'+
+      '<td title="PMC '+p.moeda+': '+fU(pn(p.pmcE,p.moeda),p.moeda)+'">'+fE2(p.pmcE)+'</td>'+
+      '<td>'+fE(p.val)+'</td>'+
+      '<td class="'+cs(p.pl)+'">'+fE(p.pl)+'</td>'+
+      '<td class="'+cs(p.plP)+'">'+fP(p.plP)+'</td>'+
+      '<td class="'+cs(p.cagr)+'">'+fP(p.cagr)+'/a</td>'+
+      '<td>'+p.peso.toFixed(1)+'%</td>'+
+      '<td style="color:var(--txt3)">'+p.sp.mn+'%</td>'+
+      '<td style="color:var(--txt3)">'+p.sp.mx+'%</td>'+
+      '<td><span class="tag '+p.et+'">'+p.est+'</span></td>'+
+      '<td>'+(p.yld>0?p.yld.toFixed(1)+'%':'—')+'</td>'+
+      '<td style="color:var(--txt3);font-size:10px">'+p.plat+'</td>'+
+    '</tr>';
+  }).join('')||'<tr><td colspan="18" style="text-align:center;padding:14px;color:var(--txt3)">Sem resultados</td></tr>';
+}
+
+// ============================================================
+// ABA OPERAÇÕES
+// ============================================================
+function rOpsTab(){
+  var tkSel=document.getElementById('fop_tk');
+  if(tkSel&&tkSel.options.length<=1){
+    var uniq=[...new Set(ops.map(function(o){return o.ticker}).filter(Boolean))].sort();
+    uniq.forEach(function(t){var o=document.createElement('option');o.value=t;o.text=t;tkSel.add(o)});
+  }
+  var sr=(document.getElementById('fop_sr')?.value||'').toUpperCase();
+  var fTp=document.getElementById('fop_tp')?.value||'';
+  var fPl=document.getElementById('fop_pl')?.value||'';
+  var fDi=document.getElementById('fop_di')?.value||'';
+  var fDf=document.getElementById('fop_df')?.value||'';
+  var fTk=document.getElementById('fop_tk')?.value||'';
+  var fEst=document.getElementById('fop_est')?.value||'';
+  var normPf=pf.map(function(p){return nTk(p.t)});
+
+  var filt=ops.filter(function(o){
+    var tkN=nTk(o.ticker||'');
+    var inPf=normPf.includes(tkN);
+    if(fEst==='promover'&&(inPf||o.tipo!=='compra'))return false;
+    if(fEst==='semtier'&&(o.tier||o.tipo!=='compra'))return false;
+    if(sr&&!(o.ticker||'').toUpperCase().includes(sr)&&!(o.nome||'').toUpperCase().includes(sr))return false;
+    if(fTp&&o.tipo!==fTp)return false;
+    if(fPl&&!(o.plat||o.plataforma||'').toUpperCase().includes(fPl.toUpperCase()))return false;
+    if(fDi&&(o.data||'')<fDi)return false;
+    if(fDf&&(o.data||'')>fDf)return false;
+    if(fTk&&o.ticker!==fTk)return false;
+    return true;
+  });
+
+  var dir=opSrt.dir==='asc'?1:-1,col=opSrt.col;
+  filt.sort(function(a,b){
+    var av=a[col]!=null?a[col]:'',bv=b[col]!=null?b[col]:'';
+    return typeof av==='number'?(av-bv)*dir:String(av).localeCompare(String(bv))*dir;
+  });
+
+  // KPIs
+  var tDiv=ops.filter(function(o){return o.tipo==='dividendo'}).reduce(function(a,b){return a+(b.preco||0)},0);
+  var semN=ops.filter(function(o){return o.tipo==='compra'&&!o.tier&&!normPf.includes(nTk(o.ticker))}).length;
+  document.getElementById('opsKpi').innerHTML=
+    '<div class="kc"><div class="kl">Total registos</div><div class="kv">'+ops.length+'</div><div class="ks">filtrados: '+filt.length+'</div></div>'+
+    '<div class="kc"><div class="kl">Compras</div><div class="kv">'+ops.filter(function(o){return o.tipo==='compra'}).length+'</div></div>'+
+    '<div class="kc"><div class="kl">Vendas</div><div class="kv">'+ops.filter(function(o){return o.tipo==='venda'}).length+'</div></div>'+
+    '<div class="kc"><div class="kl">Dividendos</div><div class="kv pos">'+ops.filter(function(o){return o.tipo==='dividendo'}).length+'</div><div class="ks">'+fE(tDiv)+'</div></div>'+
+    '<div class="kc"><div class="kl">A promover</div><div class="kv" style="color:'+(semN>0?'var(--amb)':'var(--grn)')+'">'+semN+'</div></div>';
+
+  // Avisos
+  var semTks=[...new Set(ops.filter(function(o){return o.tipo==='compra'&&!o.tier&&!normPf.includes(nTk(o.ticker))}).map(function(o){return o.ticker}))];
+  var novTks=[...new Set(ops.filter(function(o){return o.tipo==='compra'&&!normPf.includes(nTk(o.ticker))}).map(function(o){return o.ticker}))];
+  var av='';
+  if(semTks.length)av+='<div class="note note-amb" style="margin-bottom:8px">⚠️ Sem Tier: <strong>'+semTks.join(', ')+'</strong></div>';
+  if(novTks.length)av+='<div class="note note-acc" style="margin-bottom:8px">🆕 Não na carteira: <strong>'+novTks.join(', ')+'</strong></div>';
+  document.getElementById('opsMissing').innerHTML=av;
+
+  // Paginação
+  var tot=filt.length,pgs=Math.ceil(tot/OP_SZ)||1;
+  if(opPg>=pgs)opPg=Math.max(0,pgs-1);
+  var paged=filt.slice(opPg*OP_SZ,(opPg+1)*OP_SZ);
+
+  // Render tabela
+  document.getElementById('tbOpsBody').innerHTML=paged.map(function(o){
+    var tkN=nTk(o.ticker||'');
+    var posE=pf.find(function(p){return nTk(p.t)===tkN});
+    var tierA=o.tier||(posE?posE.tier:null);
+    var semT=o.tipo==='compra'&&!tierA;
+    var isNov=o.tipo==='compra'&&!normPf.includes(tkN);
+    var opts=[1,2,3,4,5].map(function(t){return'<option value="'+t+'" '+(tierA==t?'selected':'')+'>'+t+'</option>'}).join('');
+    var mOpts=['USD','EUR','GBP','MXN'].map(function(m){return'<option '+(( o.moeda||'EUR')===m?'selected':'')+'>'+m+'</option>'}).join('');
+    var tid=o.id;
+    var tierSel='<select onchange="editOp('+tid+String.fromCharCode(44,39)+'tier'+String.fromCharCode(39,44)+'this.value)" style="width:48px;padding:2px;font-size:11px;margin-bottom:0;border-color:'+(semT?'var(--amb)':'var(--bdr)')+'"><option value="">—</option>'+opts+'</select>';
+    var setorIn='<input type="text" value="'+(o.setor||(posE?posE.s:'')||'')+'" onblur="editOp('+tid+String.fromCharCode(44,39)+'setor'+String.fromCharCode(39,44)+'this.value)" style="width:85px;padding:2px;font-size:11px;margin-bottom:0" placeholder="setor...">';
+    var moedaSel='<select onchange="editOp('+tid+String.fromCharCode(44,39)+'moeda'+String.fromCharCode(39,44)+'this.value)" style="width:56px;padding:2px;font-size:11px;margin-bottom:0">'+mOpts+'</select>';
+    var notasIn='<input type="text" value="'+(o.notas||'')+'" onblur="editOp('+tid+String.fromCharCode(44,39)+'notas'+String.fromCharCode(39,44)+'this.value)" style="width:70px;padding:2px;font-size:11px;margin-bottom:0" placeholder="notas...">';
+    var promBtn=isNov?'<button onclick="promoverOp('+tid+')" style="background:var(--acc);color:#fff;border:none;border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer;font-weight:700;margin-right:2px">+</button>':'';
+    var delBtn='<button onclick="if(confirm('+String.fromCharCode(39)+'Apagar?'+String.fromCharCode(39)+'))delOp('+tid+')" class="del">✕</button>';
+    return '<tr style="'+(semT?'background:var(--amb-bg);':'')+'">'
+      +'<td style="font-size:10px;color:var(--txt3);white-space:nowrap">'+(o.data||'—')+'</td>'
+      +'<td><span class="badge '+(o.tipo==='compra'?'bt1':o.tipo==='venda'?'bt5':'bt2')+'">'+o.tipo+'</span></td>'
+      +'<td><strong>'+o.ticker+'</strong></td>'
+      +'<td style="font-size:10px;color:var(--txt2);max-width:120px;overflow:hidden;text-overflow:ellipsis">'+(o.nome||'—').substring(0,20)+'</td>'
+      +'<td style="font-size:11px">'+((o.qty||0)>0?Number(o.qty).toFixed(4):'—')+'</td>'
+      +'<td style="font-size:11px">'+((o.preco||0)>0?fE2(o.preco):'—')+'</td>'
+      +'<td style="font-size:10px">'+(o.plat||o.plataforma||'—')+'</td>'
+      +'<td>'+tierSel+'</td>'
+      +'<td>'+setorIn+'</td>'
+      +'<td>'+moedaSel+'</td>'
+      +'<td>'+notasIn+'</td>'
+      +'<td style="white-space:nowrap">'+promBtn+delBtn+'</td>'
+      +'</tr>';
+  }).join('')||'<tr><td colspan="12" style="text-align:center;padding:14px;color:var(--txt3)">Sem resultados</td></tr>';
+
+  // Barra de paginação
+  var pgB=document.getElementById('opsPg');
+  if(!pgB)return;
+  if(pgs<=1){pgB.innerHTML='';return}
+  var h='<span class="pg-info">'+( opPg+1)+'/'+pgs+' ('+tot+' reg.)</span>';
+  h+='<button onclick="opPg=0;rOpsTab()" '+(opPg===0?'disabled':'')+'>«</button>';
+  h+='<button onclick="opPg--;rOpsTab()" '+(opPg===0?'disabled':'')+'>‹</button>';
+  var ps=Math.max(0,opPg-2),pe=Math.min(pgs-1,ps+4);
+  for(var i=ps;i<=pe;i++)h+='<button onclick="opPg='+i+';rOpsTab()" class="'+(i===opPg?'on':'')+'">'+(i+1)+'</button>';
+  h+='<button onclick="opPg++;rOpsTab()" '+(opPg>=pgs-1?'disabled':'')+'>›</button>';
+  h+='<button onclick="opPg='+( pgs-1)+';rOpsTab()" '+(opPg>=pgs-1?'disabled':'')+'>»</button>';
+  pgB.innerHTML=h;
+}
+
 function goP(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
