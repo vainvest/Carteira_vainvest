@@ -1,5 +1,5 @@
 // ValorInvest Service Worker — permite funcionamento offline
-const CACHE_NAME = 'valorinvest-v6';
+const CACHE_NAME = ' valorinvest-v6';
 const urlsToCache = [
   './index.html',
   './manifest.json',
